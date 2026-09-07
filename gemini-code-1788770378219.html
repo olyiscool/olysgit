@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed & Flip Simulator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            font-family: 'Arial Black', Gadget, sans-serif;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Roblox Crosshair UI */
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        /* UI Overlay Elements */
+        .ui-panel {
+            position: absolute;
+            background: rgba(20, 20, 30, 0.75);
+            border: 3px solid #334;
+            border-radius: 12px;
+            color: #fff;
+            padding: 10px 15px;
+            text-shadow: 2px 2px 0px #000;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+        }
+
+        /* Top Center Info */
+        #top-info {
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            min-width: 300px;
+        }
+
+        #zone-title {
+            color: #ffcc00;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        #instruction {
+            color: #55ffff;
+            font-size: 14px;
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.98); opacity: 0.8; }
+            100% { transform: scale(1.02); opacity: 1; }
+        }
+
+        /* Left Action Sidebar */
+        #left-bar {
+            left: 15px;
+            top: 20%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .action-btn {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #2b32b2, #1488cc);
+            border: 3px solid #fff;
+            border-radius: 12px;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            transition: transform 0.1s;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.08);
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .action-btn.rebirth-btn {
+            background: linear-gradient(135deg, #f857a6, #ff5858);
+        }
+
+        .action-btn.shop-btn {
+            background: linear-gradient(135deg, #ff9900, #ff5500);
+        }
+
+        .action-btn.avatar-btn {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+        }
+
+        /* Bottom Stats & Upgrades Bar */
+        #bottom-bar {
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 90%;
+            max-width: 700px;
+        }
+
+        #stats-display {
+            font-size: 22px;
+            color: #00ffff;
+            background: rgba(0,0,0,0.6);
+            padding: 5px 20px;
+            border-radius: 20px;
+            border: 2px solid #00ffff;
+        }
+
+        #xp-container {
+            width: 100%;
+            height: 24px;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #xp-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            transition: width 0.2s;
+        }
+
+        #xp-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            color: #fff;
+        }
+
+        #quick-buy-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .buy-btn {
+            flex: 1;
+            padding: 10px;
+            background: linear-gradient(180deg, #42e695, #3bb2b8);
+            border: 2px solid #fff;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .buy-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Customization Modals */
+        .modal {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 450px;
+            max-height: 80vh;
+            background: rgba(15, 15, 25, 0.95);
+            border: 4px solid #fff;
+            border-radius: 16px;
+            padding: 20px;
+            z-index: 100;
+            overflow-y: auto;
+            color: white;
+        }
+
+        .modal-header {
+            font-size: 22px;
+            color: #ffcc00;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-btn {
+            background: #ff3333;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .shop-card {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            text-align: center;
+        }
+
+        .shop-card.owned {
+            border-color: #00ff66;
+        }
+
+        .shop-card button {
+            background: #00cc44;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            justify-content: center;
+        }
+
+        .color-swatch {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            cursor: pointer;
+        }
+
+        /* Controls Instructions */
+        #controls-hint {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.6);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #aaa;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="canvas"></canvas>
+        <div id="crosshair"></div>
+
+        <div id="top-info" class="ui-panel">
+            <div id="zone-title">Peaceful Plains</div>
+            <div id="instruction">SPAM SPACE TO FLIP & FLY!</div>
+        </div>
+
+        <div id="left-bar">
+            <button class="action-btn shop-btn" onclick="openModal('dumpling-modal')">
+                <span style="font-size:20px;">🥟</span>
+                <span>Dumplings</span>
+            </button>
+            <button class="action-btn rebirth-btn" onclick="openModal('rebirth-modal')">
+                <span style="font-size:20px;">🔄</span>
+                <span>Rebirth</span>
+            </button>
+            <button class="action-btn avatar-btn" onclick="openModal('avatar-modal')">
+                <span style="font-size:20px;">👕</span>
+                <span>Avatar</span>
+            </button>
+        </div>
+
+        <div id="bottom-bar">
+            <div id="stats-display">Total Speed: <span id="speed-val">0</span></div>
+            
+            <div id="xp-container">
+                <div id="xp-bar"></div>
+                <div id="xp-text">Level <span id="lvl-val">1</span> (Flips Left: <span id="flips-val">1</span>)</div>
+            </div>
+
+            <div id="quick-buy-row">
+                <button class="buy-btn" onclick="buySpeed(100)">+100 Speed<br>(10 Steps)</button>
+                <button class="buy-btn" onclick="buySpeed(1000)">+1k Speed<br>(80 Steps)</button>
+                <button class="buy-btn" onclick="buySpeed(10000)">+10k Speed<br>(500 Steps)</button>
+            </div>
+        </div>
+
+        <div id="controls-hint">
+            <b>Controls:</b><br>
+            WASD - Move<br>
+            Space - Jump / Backflip<br>
+            Mouse - Look Around<br>
+            Click Screen to Lock Camera
+        </div>
+
+        <div id="dumpling-modal" class="modal">
+            <div class="modal-header">
+                <span>Dumpling Shop</span>
+                <button class="close-btn" onclick="closeModals()">X</button>
+            </div>
+            <div class="shop-grid" id="dumpling-grid"></div>
+        </div>
+
+        <div id="rebirth-modal" class="modal">
+            <div class="modal-header">
+                <span>Rebirth Platform</span>
+                <button class="close-btn" onclick="closeModals()">X</button>
+            </div>
+            <p>Rebirthing resets your speed and level, but gives you a permanent Multiplier to all speed gains!</p>
+            <p>Requires Level: <b id="rebirth-req" style="color:#ffcc00;">10</b></p>
+            <p>Current Multiplier: <b id="rebirth-mult" style="color:#00ff66;">+0%</b></p>
+            <button class="buy-btn" style="width:100%; margin-top:15px;" onclick="doRebirth()">REBIRTH NOW</button>
+        </div>
+
+        <div id="avatar-modal" class="modal">
+            <div class="modal-header">
+                <span>Customize Avatar</span>
+                <button class="close-btn" onclick="closeModals()">X</button>
+            </div>
+            <p>Body Color:</p>
+            <div class="color-picker">
+                <div class="color-swatch" style="background:#cc0000" onclick="setAvatarColor(0xcc0000)"></div>
+                <div class="color-swatch" style="background:#00cc44" onclick="setAvatarColor(0x00cc44)"></div>
+                <div class="color-swatch" style="background:#0066ff" onclick="setAvatarColor(0x0066ff)"></div>
+                <div class="color-swatch" style="background:#ffcc00" onclick="setAvatarColor(0ffcc00)"></div>
+                <div class="color-swatch" style="background:#ffffff" onclick="setAvatarColor(0xffffff)"></div>
+            </div>
+            <p>Hat / Accessory:</p>
+            <div class="shop-grid" id="hat-grid"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // --- GAME DATA & STATE ---
+        const state = {
+            speed: 0,
+            steps: 0,
+            level: 1,
+            xp: 0,
+            xpNeeded: 100,
+            rebirths: 0,
+            multiplier: 1,
+            equippedDumpling: 0,
+            equippedHat: 0,
+            avatarColor: 0x0066ff,
+            flipsRemaining: 1,
+            maxFlips: 1
+        };
+
+        const dumplings = [
+            { id: 0, name: "Basic Dumpling", power: 1, cost: 0, color: 0xeeeeee },
+            { id: 1, name: "Cat Dumpling", power: 5, cost: 500, color: 0xffaaff },
+            { id: 2, name: "Golden Dumpling", power: 25, cost: 2500, color: 0xffcc00 },
+            { id: 3, name: "Bear Dumpling", power: 100, cost: 10000, color: 0x8b4513 },
+            { id: 4, name: "Demon Dumpling", power: 500, cost: 50000, color: 0x222222 }
+        ];
+
+        const hats = [
+            { id: 0, name: "None", cost: 0 },
+            { id: 1, name: "Top Hat", cost: 1000 },
+            { id: 2, name: "Crown", cost: 10000 },
+            { id: 3, name: "Halo", cost: 50000 }
+        ];
+
+        const ownedDumplings = [0];
+        const ownedHats = [0];
+
+        // --- THREE.JS SETUP ---
+        const container = document.getElementById('game-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x68c4fe);
+        scene.fog = new THREE.FogExp2(0x68c4fe, 0.005);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(100, 150, 50);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.camera.near = 0.5;
+        dirLight.shadow.camera.far = 500;
+        const d = 100;
+        dirLight.shadow.camera.left = -d;
+        dirLight.shadow.camera.right = d;
+        dirLight.shadow.camera.top = d;
+        dirLight.shadow.camera.bottom = -d;
+        scene.add(dirLight);
+
+        // --- ENVIRONMENT BUILD ---
+        // Roblox Checkerboard Baseplate
+        const createBaseplate = () => {
+            const size = 300;
+            const geometry = new THREE.PlaneGeometry(size, size, 30, 30);
+            
+            // Create a canvas texture for the roblox stud/checker look
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#3a3d40';
+            ctx.fillRect(0, 0, 256, 256);
+            ctx.fillStyle = '#45494e';
+            ctx.fillRect(0, 0, 128, 128);
+            ctx.fillRect(128, 128, 128, 128);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(40, 40);
+
+            const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.8 });
+            const floor = new THREE.Mesh(geometry, material);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+        };
+        createBaseplate();
+
+        // Treadmills Setup
+        const treadmills = [];
+        const createTreadmills = () => {
+            const treadmillData = [
+                { name: "Free Treadmill", mult: 1, color: 0x888888, x: -40, type: "free" },
+                { name: "x3 Speed", mult: 3, color: 0xffcc00, x: -20, type: "free" },
+                { name: "x9 Speed", mult: 9, color: 0x0066ff, x: 0, type: "free" },
+                { name: "x36 Speed (VIP)", mult: 36, color: 0x00ffcc, x: 20, type: "premium" },
+                { name: "x100 Speed (OP)", mult: 100, color: 0xff3300, x: 40, type: "premium" },
+                { name: "x200 Speed (GOD)", mult: 200, color: 0xcc00ff, x: 60, type: "premium" }
+            ];
+
+            treadmillData.forEach(data => {
+                const group = new THREE.Group();
+                group.position.set(data.x, 0.1, -30);
+
+                // Base
+                const baseGeo = new THREE.BoxGeometry(8, 0.4, 16);
+                const baseMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+                const base = new THREE.Mesh(baseGeo, baseMat);
+                base.receiveShadow = true;
+                group.add(base);
+
+                // Belt
+                const beltGeo = new THREE.BoxGeometry(7, 0.5, 14);
+                const beltMat = new THREE.MeshStandardMaterial({ color: data.color, roughness: 0.2 });
+                const belt = new THREE.Mesh(beltGeo, beltMat);
+                belt.position.y = 0.1;
+                group.add(belt);
+
+                scene.add(group);
+
+                treadmills.push({
+                    mesh: group,
+                    bounds: new THREE.Box3().setFromObject(group),
+                    mult: data.mult,
+                    type: data.type
+                });
+            });
+        };
+        createTreadmills();
+
+        // --- AVATAR BUILD (Blocky Roblox Character) ---
+        let playerGroup, bodyMesh, hatMesh, dumplingMesh;
+        const createPlayer = () => {
+            playerGroup = new THREE.Group();
+
+            // Head
+            const headGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xffcc99 });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 2.4;
+            head.castShadow = true;
+            playerGroup.add(head);
+
+            // Torso
+            const torsoGeo = new THREE.BoxGeometry(1.6, 1.6, 0.8);
+            bodyMesh = new THREE.MeshStandardMaterial({ color: state.avatarColor });
+            const torso = new THREE.Mesh(torsoGeo, bodyMesh);
+            torso.position.y = 1.0;
+            torso.castShadow = true;
+            playerGroup.add(torso);
+
+            // Dumpling Companion (Riding underneath/beside player)
+            const dumplingGeo = new THREE.SphereGeometry(0.8, 16, 16);
+            dumplingGeo.scale(1, 0.7, 1);
+            const dumplingMat = new THREE.MeshStandardMaterial({ color: dumplings[0].color });
+            dumplingMesh = new THREE.Mesh(dumplingGeo, dumplingMat);
+            dumplingMesh.position.set(0, 0.3, 0);
+            dumplingMesh.castShadow = true;
+            playerGroup.add(dumplingMesh);
+
+            // Container for Hats
+            hatMesh = new THREE.Group();
+            hatMesh.position.set(0, 3.0, 0);
+            playerGroup.add(hatMesh);
+
+            playerGroup.position.set(0, 1, 0);
+            scene.add(playerGroup);
+        };
+        createPlayer();
+
+        const updateHatVisual = () => {
+            // Clear current hat
+            while(hatMesh.children.length > 0) hatMesh.remove(hatMesh.children[0]);
+
+            if (state.equippedHat === 1) { // Top Hat
+                const geo = new THREE.CylinderGeometry(0.6, 0.6, 0.8, 12);
+                const rim = new THREE.CylinderGeometry(1.0, 1.0, 0.1, 12);
+                const mat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+                const m1 = new THREE.Mesh(geo, mat);
+                const m2 = new THREE.Mesh(rim, mat);
+                m2.position.y = -0.4;
+                hatMesh.add(m1);
+                hatMesh.add(m2);
+            } else if (state.equippedHat === 2) { // Crown
+                const geo = new THREE.CylinderGeometry(0.7, 0.5, 0.5, 6);
+                const mat = new THREE.MeshStandardMaterial({ color: 0xffcc00, metalness: 0.8 });
+                hatMesh.add(new THREE.Mesh(geo, mat));
+            } else if (state.equippedHat === 3) { // Halo
+                const geo = new THREE.TorusGeometry(0.6, 0.08, 8, 24);
+                const mat = new THREE.MeshBasicMaterial({ color: 0xffff55 });
+                const halo = new THREE.Mesh(geo, mat);
+                halo.rotation.x = Math.PI / 2;
+                hatMesh.add(halo);
+            }
+        };
+
+        // --- PHYSICS & MOVEMENT VARIABLES ---
+        const player = {
+            pos: new THREE.Vector3(0, 1, 0),
+            vel: new THREE.Vector3(),
+            onGround: true,
+            rotationY: 0,
+            pitch: 0,
+            flipAngle: 0,
+            isFlipping: false
+        };
+
+        const keys = {};
+        let isPointerLocked = false;
+
+        // Pointer Lock Setup for Roblox Style Camera Controls
+        container.addEventListener('click', () => {
+            if (!isPointerLocked) {
+                container.requestPointerLock();
+            }
+        });
+
+        document.addEventListener('pointerlockchange', () => {
+            isPointerLocked = document.pointerLockElement === container;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isPointerLocked) {
+                player.rotationY -= e.movementX * 0.003;
+                player.pitch -= e.movementY * 0.003;
+                player.pitch = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, player.pitch));
+            }
+        });
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if (e.code === 'Space') {
+                handleJump();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        // --- JUMP & BACKFLIP MECHANIC ---
+        function handleJump() {
+            if (player.onGround) {
+                player.vel.y = 12;
+                player.onGround = false;
+                state.flipsRemaining = state.maxFlips - 1;
+                addSpeed(10);
+            } else if (state.flipsRemaining > 0) {
+                // Perform Mid-Air Backflip Jump!
+                player.vel.y = 10;
+                player.isFlipping = true;
+                player.flipAngle = 0;
+                state.flipsRemaining--;
+                addSpeed(25);
+
+                // Add leveling experience per flip
+                gainXP(20);
+            }
+        }
+
+        // --- GAME LOGIC & ENGINE LOOP ---
+        let lastTime = performance.now();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const now = performance.now();
+            const dt = Math.min((now - lastTime) / 1000, 0.1);
+            lastTime = now;
+
+            // Movement Logic
+            const speedStatMultiplier = 1 + (state.speed / 500);
+            const moveSpeed = 12 * speedStatMultiplier;
+
+            let moveDir = new THREE.Vector3();
+            if (keys['KeyW']) moveDir.z -= 1;
+            if (keys['KeyS']) moveDir.z += 1;
+            if (keys['KeyA']) moveDir.x -= 1;
+            if (keys['KeyD']) moveDir.x += 1;
+            moveDir.normalize();
+
+            // Rotate relative to camera angle
+            moveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), player.rotationY);
+
+            player.vel.x = moveDir.x * moveSpeed;
+            player.vel.z = moveDir.z * moveSpeed;
+
+            // Treadmill Check
+            let onTreadmill = false;
+            const playerBox = new THREE.Box3().setFromCenterAndSize(player.pos, new THREE.Vector3(1, 2, 1));
+
+            treadmills.forEach(tm => {
+                if (tm.bounds.intersectsBox(playerBox)) {
+                    onTreadmill = true;
+                    // Auto-train on treadmill
+                    const dumplingPow = dumplings[state.equippedDumpling].power;
+                    const gain = tm.mult * dumplingPow * state.multiplier;
+                    addSpeed(gain * dt * 5);
+                }
+            });
+
+            // Gravity & Vertical Motion
+            player.vel.y -= 30 * dt; // Gravity
+            player.pos.x += player.vel.x * dt;
+            player.pos.y += player.vel.y * dt;
+            player.pos.z += player.vel.z * dt;
+
+            // Floor Collision
+            if (player.pos.y <= 1.2) {
+                player.pos.y = 1.2;
+                player.vel.y = 0;
+                player.onGround = true;
+                player.isFlipping = false;
+                state.flipsRemaining = state.maxFlips;
+            }
+
+            // Perform visual Backflip rotation animation
+            if (player.isFlipping) {
+                player.flipAngle += dt * 12; // Flip speed
+                if (player.flipAngle >= Math.PI * 2) {
+                    player.flipAngle = 0;
+                    player.isFlipping = false;
+                }
+            }
+
+            // Update Player Mesh Position/Rotation
+            playerGroup.position.copy(player.pos);
+            playerGroup.rotation.y = player.rotationY;
+
+            if (player.isFlipping) {
+                // Pitch backward for double backflips
+                playerGroup.rotation.x = -player.flipAngle;
+            } else {
+                playerGroup.rotation.x = 0;
+            }
+
+            // Camera Tracking (3rd Person Roblox Style)
+            const camOffset = new THREE.Vector3(0, 5, 12);
+            camOffset.applyAxisAngle(new THREE.Vector3(1, 0, 0), player.pitch);
+            camOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), player.rotationY);
+
+            camera.position.copy(player.pos).add(camOffset);
+            camera.lookAt(player.pos.clone().add(new THREE.Vector3(0, 2, 0)));
+
+            // Render Scene
+            renderer.render(scene, camera);
+
+            // Update UI
+            updateUI();
+        }
+
+        // --- STATS & SHOP SYSTEM ---
+        function addSpeed(amount) {
+            state.speed += amount;
+            state.steps += Math.floor(amount / 5);
+        }
+
+        function buySpeed(amount) {
+            const costSteps = Math.floor(amount / 10);
+            if (state.steps >= costSteps) {
+                state.steps -= costSteps;
+                state.speed += amount;
+            } else {
+                alert("Not enough steps! Run or use Treadmills to get more.");
+            }
+        }
+
+        function gainXP(amount) {
+            state.xp += amount;
+            if (state.xp >= state.xpNeeded) {
+                state.xp -= state.xpNeeded;
+                state.level++;
+                state.maxFlips++; // +1 Jump/Backflip per Level!
+                state.xpNeeded = Math.floor(state.xpNeeded * 1.5);
+            }
+        }
+
+        function doRebirth() {
+            if (state.level >= 10) {
+                state.rebirths++;
+                state.multiplier += 1.0; // +100% boost per rebirth
+                state.speed = 0;
+                state.level = 1;
+                state.maxFlips = 1;
+                state.xp = 0;
+                closeModals();
+                alert("Successfully Rebirthed! You received a permanent multiplier boost!");
+            } else {
+                alert("You need at least Level 10 to Rebirth!");
+            }
+        }
+
+        function setAvatarColor(color) {
+            state.avatarColor = color;
+            bodyMesh.color.setHex(color);
+        }
+
+        // UI Updates
+        function updateUI() {
+            document.getElementById('speed-val').innerText = Math.floor(state.speed).toLocaleString();
+            document.getElementById('lvl-val').innerText = state.level;
+            document.getElementById('flips-val').innerText = state.flipsRemaining;
+            
+            const xpPct = (state.xp / state.xpNeeded) * 100;
+            document.getElementById('xp-bar').style.width = xpPct + '%';
+
+            document.getElementById('rebirth-req').innerText = "10 (Current: " + state.level + ")";
+            document.getElementById('rebirth-mult').innerText = "+" + (state.rebirths * 100) + "% Boost";
+        }
+
+        // --- SHOP & UI MODALS ---
+        function openModal(id) {
+            document.exitPointerLock();
+            closeModals();
+            document.getElementById(id).style.display = 'block';
+            if (id === 'dumpling-modal') renderDumplingShop();
+            if (id === 'avatar-modal') renderHatShop();
+        }
+
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        }
+
+        function renderDumplingShop() {
+            const grid = document.getElementById('dumpling-grid');
+            grid.innerHTML = '';
+            dumplings.forEach(d => {
+                const isOwned = ownedDumplings.includes(d.id);
+                const isEquipped = state.equippedDumpling === d.id;
+
+                const card = document.createElement('div');
+                card.className = `shop-card ${isOwned ? 'owned' : ''}`;
+                card.innerHTML = `
+                    <b>${d.name}</b>
+                    <div>+${d.power} Power</div>
+                    ${isEquipped ? '<b style="color:#00ff66;">EQUIPPED</b>' : 
+                      isOwned ? `<button onclick="equipDumpling(${d.id})">Equip</button>` : 
+                      `<button onclick="buyDumpling(${d.id})">Buy (${d.cost} Speed)</button>`}
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function buyDumpling(id) {
+            const item = dumplings.find(d => d.id === id);
+            if (state.speed >= item.cost) {
+                state.speed -= item.cost;
+                ownedDumplings.push(id);
+                equipDumpling(id);
+                renderDumplingShop();
+            } else {
+                alert("Not enough speed!");
+            }
+        }
+
+        function equipDumpling(id) {
+            state.equippedDumpling = id;
+            dumplingMesh.material.color.setHex(dumplings[id].color);
+            renderDumplingShop();
+        }
+
+        function renderHatShop() {
+            const grid = document.getElementById('hat-grid');
+            grid.innerHTML = '';
+            hats.forEach(h => {
+                const isOwned = ownedHats.includes(h.id);
+                const isEquipped = state.equippedHat === h.id;
+
+                const card = document.createElement('div');
+                card.className = `shop-card ${isOwned ? 'owned' : ''}`;
+                card.innerHTML = `
+                    <b>${h.name}</b>
+                    ${isEquipped ? '<b style="color:#00ff66;">EQUIPPED</b>' : 
+                      isOwned ? `<button onclick="equipHat(${h.id})">Equip</button>` : 
+                      `<button onclick="buyHat(${h.id})">Buy (${h.cost} Speed)</button>`}
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function buyHat(id) {
+            const item = hats.find(h => h.id === id);
+            if (state.speed >= item.cost) {
+                state.speed -= item.cost;
+                ownedHats.push(id);
+                equipHat(id);
+                renderHatShop();
+            } else {
+                alert("Not enough speed!");
+            }
+        }
+
+        function equipHat(id) {
+            state.equippedHat = id;
+            updateHatVisual();
+            renderHatShop();
+        }
+
+        // Resize Listener
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Start Game
+        animate();
+    </script>
+</body>
+</html>
