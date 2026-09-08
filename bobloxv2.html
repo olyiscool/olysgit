@@ -1,0 +1,2951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boblox</title>
+    <style>
+        :root {
+            --bg-dark: #191b1d;
+            --sidebar-bg: #232527;
+            --card-bg: #232527;
+            --text-main: #ffffff;
+            --text-muted: #bdbebe;
+            --accent-green: #32a852;
+            --accent-blue: #00a2ff;
+            --border-color: #393b3d;
+            --username-color: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+        }
+
+        /* --- MENU STYLES --- */
+        body.style-classic {
+            --bg-dark: #191b1d;
+            --sidebar-bg: #232527;
+            --card-bg: #232527;
+            --border-color: #393b3d;
+        }
+
+        body.style-modern {
+            --bg-dark: #0f1115;
+            --sidebar-bg: #161920;
+            --card-bg: #1c202a;
+            --border-color: #2a303f;
+        }
+
+        body.style-light {
+            --bg-dark: #f0f2f5;
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --text-main: #111111;
+            --text-muted: #65676b;
+            --border-color: #e4e6eb;
+        }
+
+        /* --- LOGIN MODAL --- */
+        #login-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+
+        .login-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            color: var(--text-main);
+        }
+
+        .login-card h2 {
+            font-size: 22px;
+            letter-spacing: 1px;
+        }
+
+        .login-card input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #151719;
+            color: #ffffff;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .login-card button {
+            background: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        .login-card button:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        .login-card button:disabled {
+            background: #555555;
+            color: #888888;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .login-color-picker {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* --- DASHBOARD UI --- */
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            z-index: 10;
+        }
+
+        sidebar {
+            width: 240px;
+            height: 100%;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 10px;
+            gap: 15px;
+        }
+
+        .brand-logo {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            padding-left: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-main);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: 0.2s;
+        }
+
+        .nav-item-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .nav-badge {
+            background: #d90429;
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        main {
+            flex: 1;
+            padding: 25px 40px;
+            overflow-y: auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .header-greeting {
+            font-size: 28px;
+            margin-bottom: 25px;
+            color: var(--text-main);
+        }
+
+        .avatar-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .avatar-header-row .header-greeting {
+            margin-bottom: 0;
+        }
+
+        .reset-default-btn {
+            background-color: #d90429;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .reset-default-btn:hover {
+            background-color: #ef233c;
+        }
+
+        .user-colored-name {
+            color: var(--username-color);
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .game-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+
+        .game-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-color);
+        }
+
+        .game-thumb {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background-color: #333;
+        }
+
+        .game-info {
+            padding: 12px 10px;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .game-title {
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .game-player-count {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        /* --- FRIENDS PANEL / TAB --- */
+        .friends-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 500px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .friends-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .friend-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.03);
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .friend-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .friend-status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #555;
+        }
+
+        .friend-status-dot.online {
+            background: var(--accent-green);
+        }
+
+        /* --- CHAT TAB INTERFACE --- */
+        .chat-hub-container {
+            display: flex;
+            height: calc(100vh - 120px);
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .chat-sidebar {
+            width: 260px;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            background: rgba(0,0,0,0.15);
+        }
+
+        .chat-sidebar-header {
+            padding: 15px;
+            font-size: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-threads-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-thread-item {
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            transition: 0.15s;
+        }
+
+        .chat-thread-item:hover, .chat-thread-item.active {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .chat-main-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--card-bg);
+        }
+
+        .chat-messages-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-message-bubble {
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 20px;
+            word-break: break-word;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .chat-input-bar {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .chat-input-bar input {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #151719;
+            color: #ffffff;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .chat-input-bar button {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* --- ACCOUNT TAB --- */
+        .account-settings-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 500px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .setting-group label {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .setting-group input[type="text"], .setting-group select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #151719;
+            color: #ffffff;
+            outline: none;
+        }
+
+        .setting-group button {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* --- AVATAR CUSTOMIZER UI --- */
+        .avatar-editor-container {
+            display: flex;
+            gap: 30px;
+            height: calc(100vh - 120px);
+        }
+
+        .avatar-preview-box {
+            width: 340px;
+            height: 100%;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #avatar-preview-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .avatar-controls-box {
+            flex: 1;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .body-parts-selector, .hats-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .part-btn, .hat-btn {
+            background: #2f3136;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .part-btn.active, .hat-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        /* COLOR PALETTE & WHEEL */
+        .color-picker-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .custom-color-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #2f3136;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            color: white;
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            background: none;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: 1px solid #ffffff;
+            border-radius: 50%;
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+            gap: 8px;
+            max-width: 500px;
+            background: #1e2022;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .color-swatch {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.1s, border-color 0.1s, box-shadow 0.1s;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.15);
+            z-index: 2;
+        }
+
+        .color-swatch.selected {
+            border-color: #ffffff !important;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 2px black;
+            transform: scale(1.15);
+            z-index: 3;
+        }
+
+        /* --- IN-GAME HUD & ESCAPE MENU --- */
+        #game-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 1;
+        }
+
+        #game-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* ESCAPE MENU MODAL */
+        #esc-menu-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 40;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .esc-menu-card {
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            color: white;
+        }
+
+        .esc-menu-card h3 {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .esc-setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .esc-menu-card button {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        .esc-menu-card button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .esc-menu-card button.leave-btn-danger {
+            background: #d90429;
+            border-color: #d90429;
+        }
+
+        .esc-menu-card button.leave-btn-danger:hover {
+            background: #ef233c;
+        }
+
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            pointer-events: none;
+            display: none;
+            z-index: 15;
+        }
+
+        #crosshair::before, #crosshair::after {
+            content: '';
+            position: absolute;
+            background: white;
+            box-shadow: 0 0 2px black;
+        }
+
+        #crosshair::before {
+            top: 5px; left: 0; width: 12px; height: 2px;
+        }
+
+        #crosshair::after {
+            top: 0; left: 5px; width: 2px; height: 12px;
+        }
+
+        /* --- ROBLOX-STYLE IN-GAME CHAT --- */
+        #roblox-chat {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 350px;
+            z-index: 30;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            pointer-events: auto;
+        }
+
+        #roblox-chat-bar {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 2px;
+        }
+
+        .roblox-chat-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.58);
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,.35);
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .roblox-logo {
+            position: relative;
+            width: 18px;
+            height: 18px;
+            background: white;
+            transform: rotate(-12deg);
+            clip-path: polygon(20% 0, 100% 20%, 80% 100%, 0 80%);
+        }
+
+        .roblox-logo::after {
+            content: "";
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            left: 7px;
+            top: 7px;
+            background: rgba(0,0,0,.58);
+        }
+
+        #roblox-chat-panel {
+            width: 350px;
+            height: 178px;
+            background: rgba(20, 20, 20, 0.63);
+            overflow: hidden;
+            display: block;
+            border-radius: 0 0 4px 4px;
+        }
+
+        #roblox-chat-messages {
+            height: 178px;
+            padding: 5px 4px 42px 2px;
+            overflow-y: auto;
+            color: white;
+            font-size: 14px;
+            line-height: 18px;
+            text-shadow: 0 1px 2px black;
+        }
+
+        .roblox-chat-system {
+            margin-bottom: 2px;
+        }
+
+        #roblox-chat-input-wrap {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 350px;
+            height: 31px;
+            padding: 1px 7px 2px 1px;
+            background: rgba(10,10,10,.22);
+        }
+
+        #roblox-chat-input {
+            width: 343px;
+            height: 29px;
+            border: none;
+            outline: none;
+            background: rgba(225, 225, 225, 0.83);
+            color: #3f3f3f;
+            padding: 4px 7px;
+            font-size: 14px;
+            font-weight: bold;
+            box-sizing: border-box;
+        }
+
+        #roblox-chat-input::placeholder {
+            color: #4e4e4e;
+            opacity: 1;
+        }
+
+        /* --- FRIEND REQUEST / INCOMING MESSAGE NOTIFICATION --- */
+        #friend-request-notification {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            width: 330px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            z-index: 200;
+            box-shadow: 0 8px 28px rgba(0,0,0,.55);
+            display: none;
+            color: var(--text-main);
+        }
+
+        #friend-request-notification .request-title {
+            font-size: 16px;
+            margin-bottom: 7px;
+        }
+
+        #friend-request-notification .request-text {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        .friend-request-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .friend-request-actions button {
+            flex: 1;
+            border: none;
+            border-radius: 6px;
+            padding: 9px;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+        }
+
+        #accept-friend-request-btn {
+            background: var(--accent-green);
+        }
+
+        #decline-friend-request-btn {
+            background: #d90429;
+        }
+
+        /* --- DM POPUP NOTIFICATION (ANSWER / IGNORE) --- */
+        #dm-popup-notification {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            width: 330px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            z-index: 210;
+            box-shadow: 0 8px 28px rgba(0,0,0,.55);
+            display: none;
+            color: var(--text-main);
+        }
+
+        #dm-popup-notification .dm-title {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        #dm-popup-notification .dm-text {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            word-break: break-word;
+        }
+
+        .dm-popup-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .dm-popup-actions button {
+            flex: 1;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+        }
+
+        #dm-answer-btn {
+            background: var(--accent-green);
+        }
+
+        #dm-ignore-btn {
+            background: #d90429;
+        }
+
+        #dm-reply-container {
+            display: none;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        #dm-reply-input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #151719;
+            color: white;
+            font-size: 13px;
+            outline: none;
+        }
+
+        #dm-reply-send-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .brand-version {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--text-muted);
+            margin-left: 3px;
+            letter-spacing: 0;
+        }
+    </style>
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- PeerJS Library for Multiplayer -->
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+</head>
+<body class="style-classic">
+
+    <!-- USERNAME LOGIN MODAL -->
+    <div id="login-modal-overlay">
+        <div class="login-card">
+            <h2>Welcome to Boblox</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">Enter your username and pick a colour</p>
+            <input type="text" id="login-username-input" placeholder="Username..." maxlength="16" oninput="validateLoginInput()">
+            <div class="login-color-picker">
+                <span>Username Colour:</span>
+                <input type="color" id="login-color-input" value="#00a2ff">
+            </div>
+            <button id="login-play-btn" onclick="submitUsername()" disabled>Play</button>
+        </div>
+    </div>
+
+    <!-- FRIEND REQUEST NOTIFICATION -->
+    <div id="friend-request-notification">
+        <div class="request-title">Friend Request</div>
+        <div class="request-text" id="friend-request-text">Someone wants to be your friend.</div>
+        <div class="friend-request-actions">
+            <button id="accept-friend-request-btn" onclick="acceptFriendRequest()">Accept</button>
+            <button id="decline-friend-request-btn" onclick="declineFriendRequest()">Decline</button>
+        </div>
+    </div>
+
+    <!-- DM POPUP NOTIFICATION -->
+    <div id="dm-popup-notification">
+        <div class="dm-title" id="dm-popup-title">New Direct Message</div>
+        <div class="dm-text" id="dm-popup-text">Message content here...</div>
+        <div class="dm-popup-actions" id="dm-popup-btns">
+            <button id="dm-answer-btn" onclick="openDmAnswerInput()">Answer</button>
+            <button id="dm-ignore-btn" onclick="ignoreDmPopup()">Ignore</button>
+        </div>
+        <div id="dm-reply-container">
+            <input type="text" id="dm-reply-input" placeholder="Type reply..." onkeydown="handleDmReplyKey(event)">
+            <button id="dm-reply-send-btn" onclick="sendDmReply()">Send</button>
+        </div>
+    </div>
+
+    <!-- DASHBOARD MENU -->
+    <div id="ui-overlay">
+        <sidebar>
+            <div class="brand-logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><rect x="3" y="3" width="18" height="18" rx="2" transform="rotate(-12 12 12)"/></svg>
+                <span>BOBLOX <small class="brand-version">v1.3</small></span>
+            </div>
+            <div class="nav-item active" onclick="switchTab('home')"><div class="nav-item-content">🏠 Home</div></div>
+            <div class="nav-item" onclick="switchTab('avatar')"><div class="nav-item-content">👤 Avatar</div></div>
+            <div class="nav-item" onclick="switchTab('friends')"><div class="nav-item-content">👥 Friends</div></div>
+            <div class="nav-item" onclick="switchTab('chat')">
+                <div class="nav-item-content">💬 Chat</div>
+                <div class="nav-badge" id="nav-chat-badge">0</div>
+            </div>
+            <div class="nav-item" onclick="switchTab('account')"><div class="nav-item-content">⚙️ Account</div></div>
+        </sidebar>
+
+        <main>
+            <!-- HOME TAB -->
+            <div id="tab-home" class="tab-content active">
+                <h1 class="header-greeting">Afternoon, <span class="user-colored-name" id="user-greeting">Player</span></h1>
+                
+                <div class="section-title">Recommended For You</div>
+                <div class="games-grid">
+                    <div class="game-card" onclick="launchGame('Obby')">
+                        <img class="game-thumb" src="https://picsum.photos/seed/obby/200/200" alt="Obby">
+                        <div class="game-info">
+                            <div class="game-title">Mega Easy Obby</div>
+                            <div class="game-player-count" id="count-obby">1 players in game</div>
+                        </div>
+                    </div>
+                    <div class="game-card" onclick="launchGame('Baseplate')">
+                        <img class="game-thumb" src="https://picsum.photos/seed/baseplate/200/200" alt="Baseplate">
+                        <div class="game-info">
+                            <div class="game-title">Classic Baseplate Sandbox</div>
+                            <div class="game-player-count" id="count-baseplate">1 players in game</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AVATAR EDITOR TAB -->
+            <div id="tab-avatar" class="tab-content">
+                <div class="avatar-header-row">
+                    <h1 class="header-greeting">Avatar Customizer</h1>
+                    <button class="reset-default-btn" onclick="resetAvatarToDefault()">Default</button>
+                </div>
+                <div class="avatar-editor-container">
+                    <!-- Live 3D Preview Box -->
+                    <div class="avatar-preview-box">
+                        <canvas id="avatar-preview-canvas"></canvas>
+                    </div>
+
+                    <!-- Customizer Controls -->
+                    <div class="avatar-controls-box">
+                        <!-- HATS SECTION -->
+                        <div class="section-title">Hats & Accessories</div>
+                        <div class="hats-selector">
+                            <button class="hat-btn active" onclick="selectHat('none')">None</button>
+                            <button class="hat-btn" onclick="selectHat('topHat')">🎩 Top Hat</button>
+                            <button class="hat-btn" onclick="selectHat('fedora')">🤠 Fedora</button>
+                            <button class="hat-btn" onclick="selectHat('party')">🥳 Party Hat</button>
+                            <button class="hat-btn" onclick="selectHat('labubu')">👾 Labubu Ears & Mask</button>
+                        </div>
+
+                        <!-- BODY PART SELECTOR -->
+                        <div class="section-title" style="margin-top: 10px;">Select Body Part</div>
+                        <div class="body-parts-selector">
+                            <button class="part-btn active" onclick="selectBodyPart('all')">All</button>
+                            <button class="part-btn" onclick="selectBodyPart('head')">Head</button>
+                            <button class="part-btn" onclick="selectBodyPart('torso')">Torso</button>
+                            <button class="part-btn" onclick="selectBodyPart('leftArm')">Left Arm</button>
+                            <button class="part-btn" onclick="selectBodyPart('rightArm')">Right Arm</button>
+                            <button class="part-btn" onclick="selectBodyPart('leftLeg')">Left Leg</button>
+                            <button class="part-btn" onclick="selectBodyPart('rightLeg')">Right Leg</button>
+                        </div>
+
+                        <!-- COLOR SELECTION -->
+                        <div class="section-title" style="margin-top: 10px;">Skin Color Palette</div>
+                        <div class="color-picker-row">
+                            <div class="custom-color-btn">
+                                <span>Custom Wheel Picker:</span>
+                                <input type="color" id="html-color-wheel" value="#fcdb03" onchange="applyColorToSelectedPart(this.value)">
+                            </div>
+                        </div>
+                        <div class="color-palette" id="color-palette"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FRIENDS TAB -->
+            <div id="tab-friends" class="tab-content">
+                <h1 class="header-greeting">Friends List</h1>
+                <div class="friends-container">
+                    <div class="setting-group">
+                        <label for="add-friend-input">Add Friend by Peer ID (they must accept)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="add-friend-input" placeholder="Enter Friend Peer ID...">
+                            <button onclick="addFriend()">Add</button>
+                        </div>
+                    </div>
+                    <div class="section-title" style="margin-top: 10px;">Your Friends</div>
+                    <div class="friends-list" id="friends-list-container">
+                        <!-- Dynamic Friend Items -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAT HUB TAB -->
+            <div id="tab-chat" class="tab-content">
+                <div class="avatar-header-row">
+                    <h1 class="header-greeting">Chat Hub</h1>
+                    <button style="background: var(--accent-blue); color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;" onclick="openCreateGroupModal()">+ New Group</button>
+                </div>
+                <div class="chat-hub-container">
+                    <div class="chat-sidebar">
+                        <div class="chat-sidebar-header">
+                            <span>Conversations</span>
+                        </div>
+                        <div class="chat-threads-list" id="chat-threads-list">
+                            <!-- Dynamic Threads -->
+                        </div>
+                    </div>
+                    <div class="chat-main-pane">
+                        <div class="chat-sidebar-header" id="active-chat-title">Select a chat</div>
+                        <div class="chat-messages-area" id="chat-messages-area">
+                            <div style="color:var(--text-muted); text-align:center; margin-top:50px;">Select a conversation on the left to start messaging.</div>
+                        </div>
+                        <div class="chat-input-bar" id="chat-input-container" style="display:none;">
+                            <input type="text" id="chat-tab-input" placeholder="Type a message..." onkeydown="handleChatTabInputKey(event)">
+                            <button onclick="sendChatTabMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACCOUNT TAB -->
+            <div id="tab-account" class="tab-content">
+                <h1 class="header-greeting">Account Settings</h1>
+                <div class="account-settings-container">
+                    <div class="setting-group">
+                        <label for="acc-username-input">Change Username</label>
+                        <input type="text" id="acc-username-input" placeholder="New username..." maxlength="16">
+                    </div>
+                    <div class="setting-group">
+                        <label for="acc-color-input">Username Colour</label>
+                        <input type="color" id="acc-color-input" value="#00a2ff">
+                    </div>
+                    <div class="setting-group">
+                        <label for="acc-style-select">Menu Theme Style</label>
+                        <select id="acc-style-select" onchange="changeMenuStyle(this.value)">
+                            <option value="style-classic">Classic Dark</option>
+                            <option value="style-modern">Modern Midnight</option>
+                            <option value="style-light">Light Theme</option>
+                        </select>
+                    </div>
+                    <div class="setting-group" style="margin-top: 10px;">
+                        <button onclick="saveAccountSettings()">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 3D GAME CANVAS CONTAINER -->
+    <div id="game-view">
+        <div id="roblox-chat">
+            <div id="roblox-chat-bar">
+                <div class="roblox-chat-icon" onclick="toggleEscMenu()"><div class="roblox-logo"></div></div>
+                <div class="roblox-chat-icon" onclick="toggleChatPanel()">💬</div>
+            </div>
+            <div id="roblox-chat-panel">
+                <div id="roblox-chat-messages">
+                    <div class="roblox-chat-system"><span style="color: red;">[Server]:</span> Feel free to chat! Use /r to reply to whispers.</div>
+                </div>
+            </div>
+            <div id="roblox-chat-input-wrap">
+                <input id="roblox-chat-input" type="text" placeholder="To chat click here or press &quot;/&quot; key">
+            </div>
+        </div>
+
+        <!-- ESCAPE MENU OVERLAY -->
+        <div id="esc-menu-overlay">
+            <div class="esc-menu-card">
+                <h3>Settings</h3>
+                
+                <div class="esc-setting-item">
+                    <span>Shift Lock Switch</span>
+                    <button id="esc-shiftlock-btn" style="padding: 6px 12px; font-size: 13px;" onclick="toggleShiftLock()">OFF</button>
+                </div>
+
+                <div class="esc-setting-item">
+                    <span>Volume</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span id="sound-mute-btn" style="cursor: pointer; font-size: 16px;" onclick="toggleMuteAudio()">🔊</span>
+                        <input type="range" id="sound-volume-slider" min="0" max="1" step="0.05" value="1" style="width: 70px;" oninput="updateAudioVolume(this.value)">
+                    </div>
+                </div>
+
+                <button onclick="toggleEscMenu()" style="margin-top: 10px;">Resume</button>
+                <button onclick="respawnPlayer()">Respawn</button>
+                <button class="leave-btn-danger" onclick="exitGame()">Leave</button>
+            </div>
+        </div>
+
+        <div id="crosshair"></div>
+        <canvas id="game-canvas"></canvas>
+    </div>
+
+    <script>
+        /* ==========================================
+           USERNAME LOGGING & PERSISTENCE
+           ========================================== */
+        let currentUsername = localStorage.getItem('boblox_username') || '';
+        let currentUsernameColor = localStorage.getItem('boblox_username_color') || '#00a2ff';
+        let currentMenuStyle = localStorage.getItem('boblox_menu_style') || 'style-classic';
+
+        function validateLoginInput() {
+            const input = document.getElementById('login-username-input');
+            const btn = document.getElementById('login-play-btn');
+            btn.disabled = !input.value.trim();
+        }
+
+        function checkUserLogin() {
+            const loginModal = document.getElementById('login-modal-overlay');
+            const usernameInput = document.getElementById('login-username-input');
+
+            document.body.className = currentMenuStyle;
+            document.getElementById('acc-style-select').value = currentMenuStyle;
+
+            if (currentUsername) {
+                loginModal.style.display = 'none';
+                updateUserDisplay();
+            } else {
+                loginModal.style.display = 'flex';
+                usernameInput.focus();
+                validateLoginInput();
+            }
+        }
+
+        function updateUserDisplay() {
+            const greeting = document.getElementById('user-greeting');
+            greeting.innerText = currentUsername;
+            greeting.style.color = currentUsernameColor;
+            document.documentElement.style.setProperty('--username-color', currentUsernameColor);
+
+            document.getElementById('acc-username-input').value = currentUsername;
+            document.getElementById('acc-color-input').value = currentUsernameColor;
+        }
+
+        function submitUsername() {
+            const val = document.getElementById('login-username-input').value.trim();
+            const col = document.getElementById('login-color-input').value;
+            if (val) {
+                currentUsername = val;
+                currentUsernameColor = col;
+                localStorage.setItem('boblox_username', currentUsername);
+                localStorage.setItem('boblox_username_color', currentUsernameColor);
+                document.getElementById('login-modal-overlay').style.display = 'none';
+                updateUserDisplay();
+            }
+        }
+
+        function saveAccountSettings() {
+            const val = document.getElementById('acc-username-input').value.trim();
+            const col = document.getElementById('acc-color-input').value;
+            if (val) {
+                currentUsername = val;
+                currentUsernameColor = col;
+                localStorage.setItem('boblox_username', currentUsername);
+                localStorage.setItem('boblox_username_color', currentUsernameColor);
+                updateUserDisplay();
+                alert('Account settings updated!');
+            }
+        }
+
+        function changeMenuStyle(styleName) {
+            currentMenuStyle = styleName;
+            document.body.className = styleName;
+            localStorage.setItem('boblox_menu_style', currentMenuStyle);
+        }
+
+        document.getElementById('login-username-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') submitUsername();
+        });
+
+        window.addEventListener('DOMContentLoaded', checkUserLogin);
+
+        /* ==========================================
+           GLOBAL AVATAR CUSTOMIZATION STATE & STORAGE
+           ========================================== */
+        const defaultAvatarCustomization = {
+            head: 0xfcdb03,
+            torso: 0x00a2ff,
+            leftArm: 0xfcdb03,
+            rightArm: 0xfcdb03,
+            leftLeg: 0xa0a0a0,
+            rightLeg: 0xa0a0a0,
+            activeHat: 'none'
+        };
+
+        let savedAvatarCustomization = localStorage.getItem('boblox_avatar_customization');
+        const avatarCustomization = savedAvatarCustomization ? JSON.parse(savedAvatarCustomization) : { ...defaultAvatarCustomization };
+
+        function saveAvatarToStorage() {
+            localStorage.setItem('boblox_avatar_customization', JSON.stringify(avatarCustomization));
+        }
+
+        function resetAvatarToDefault() {
+            Object.assign(avatarCustomization, defaultAvatarCustomization);
+            saveAvatarToStorage();
+            
+            document.querySelectorAll('.hat-btn').forEach(btn => btn.classList.remove('active'));
+            const firstHatBtn = document.querySelector('.hat-btn');
+            if (firstHatBtn) firstHatBtn.classList.add('active');
+
+            document.querySelectorAll('.part-btn').forEach(btn => btn.classList.remove('active'));
+            const firstPartBtn = document.querySelector('.part-btn');
+            if (firstPartBtn) firstPartBtn.classList.add('active');
+            activeSelectedPart = 'all';
+
+            document.getElementById('html-color-wheel').value = '#fcdb03';
+
+            if (previewCharacter) {
+                updateCharacterColors(previewCharacter, avatarCustomization);
+            }
+            highlightActiveColorSwatch();
+        }
+
+        const presetColors = [
+            0x001f3f, 0x003366, 0x0055a5, 0x0074d9, 0x0011ff, 0x392b8d,
+            0x004d40, 0x008080, 0x00a896, 0x02c39a, 0x00f5d4, 0x7b2cbf,
+            0x0f52ba, 0x00bbf9, 0x00f0ff, 0x80ffea, 0xb5179e, 0x7209b7,
+            0x006400, 0x00a200, 0x2ec4b6, 0x70e000, 0xccff00, 0xd80032,
+            0x386641, 0x6a994e, 0xa7c957, 0xffee83, 0xff99c8, 0xef233c,
+            0x556b2f, 0x808000, 0xc7f9cc, 0xfff3b0, 0xff007f, 0xd90429,
+            0x4a3b00, 0x856d00, 0xfcdb03, 0xffe600, 0xff5733, 0x9b2226,
+            0x5c3d11, 0x8b5a2b, 0xd4a373, 0xf4a261, 0xe76f51, 0xae2012,
+            0x2b1e1a, 0x4a2e2b, 0x7f4f24, 0xa3b18a, 0xe0a96d, 0xffffff,
+            0x111111, 0x222222, 0x555555, 0x888888, 0xaaaaaa, 0xdddddd
+        ];
+
+        let activeSelectedPart = 'all';
+
+        /* ==========================================
+           PROCEDURAL TEXTURE GENERATORS
+           ========================================== */
+        function createStudTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(0, 0, 64, 64);
+
+            const studSize = 42;
+            const pos = (64 - studSize) / 2;
+
+            ctx.fillStyle = '#404040';
+            ctx.fillRect(pos, pos, studSize + 2, studSize + 2);
+
+            ctx.fillStyle = '#d0d0d0';
+            ctx.fillRect(pos, pos, studSize, studSize);
+
+            ctx.fillStyle = '#606060';
+            ctx.fillRect(pos + 3, pos + 3, studSize - 3, studSize - 3);
+
+            ctx.fillStyle = '#a0a0a0';
+            ctx.fillRect(pos + 5, pos + 5, studSize - 8, studSize - 8);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            return texture;
+        }
+
+        function createSmileyTexture(baseColorHex) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#' + baseColorHex.toString(16).padStart(6, '0');
+            ctx.fillRect(0, 0, 256, 256);
+
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(80, 100, 16, 0, Math.PI * 2);
+            ctx.arc(176, 100, 16, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.lineWidth = 14;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(128, 130, 60, 0.2 * Math.PI, 0.8 * Math.PI, false);
+            ctx.stroke();
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            return texture;
+        }
+
+        const studTextureTemplate = createStudTexture();
+
+        /* ==========================================
+           HAT MESH FACTORY
+           ========================================== */
+        function createHatMesh(type) {
+            const hatGroup = new THREE.Group();
+            hatGroup.name = "hat";
+
+            if (type === 'topHat') {
+                const hatMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3 });
+                const bandMat = new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness: 0.3 });
+
+                const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 0.08, 24), hatMat);
+                brim.position.y = 0.55;
+                hatGroup.add(brim);
+
+                const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.6, 1.0, 24), hatMat);
+                crown.position.y = 1.05;
+                hatGroup.add(crown);
+
+                const band = new THREE.Mesh(new THREE.CylinderGeometry(0.66, 0.61, 0.2, 24), bandMat);
+                band.position.y = 0.68;
+                hatGroup.add(band);
+            } 
+            else if (type === 'fedora') {
+                const fedoraMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 });
+                const bandMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.4 });
+
+                const brim = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 0.95, 0.06, 24), fedoraMat);
+                brim.position.y = 0.53;
+                brim.rotation.x = 0.1;
+                hatGroup.add(brim);
+
+                const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 0.65, 24), fedoraMat);
+                crown.position.y = 0.85;
+                hatGroup.add(crown);
+
+                const band = new THREE.Mesh(new THREE.CylinderGeometry(0.57, 0.61, 0.15, 24), bandMat);
+                band.position.y = 0.62;
+                hatGroup.add(band);
+            }
+            else if (type === 'party') {
+                const coneMat = new THREE.MeshStandardMaterial({ color: 0xff0055, roughness: 0.3 });
+                const ballMat = new THREE.MeshStandardMaterial({ color: 0xffea00, roughness: 0.2 });
+
+                const cone = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.1, 24), coneMat);
+                cone.position.y = 1.05;
+                hatGroup.add(cone);
+
+                const pompom = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 12), ballMat);
+                pompom.position.y = 1.6;
+                hatGroup.add(pompom);
+            }
+            else if (type === 'labubu') {
+                const furMat = new THREE.MeshStandardMaterial({ color: 0x3d74ff, roughness: 0.8 }); // Vibrant blue/teal style fur
+                const innerEarMat = new THREE.MeshStandardMaterial({ color: 0xff99c8, roughness: 0.5 });
+                const toothMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
+
+                // Left Ear
+                const leftEar = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.7, 16), furMat);
+                leftEar.position.set(-0.45, 0.9, -0.1);
+                leftEar.rotation.z = -0.2;
+                hatGroup.add(leftEar);
+
+                const leftInner = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.5, 16), innerEarMat);
+                leftInner.position.set(-0.45, 0.88, 0.02);
+                leftInner.rotation.z = -0.2;
+                hatGroup.add(leftInner);
+
+                // Right Ear
+                const rightEar = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.7, 16), furMat);
+                rightEar.position.set(0.45, 0.9, -0.1);
+                rightEar.rotation.z = 0.2;
+                hatGroup.add(rightEar);
+
+                const rightInner = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.5, 16), innerEarMat);
+                rightInner.position.set(0.45, 0.88, 0.02);
+                rightInner.rotation.z = 0.2;
+                hatGroup.add(rightInner);
+
+                // Mischievous Teeth Grin Bar at the bottom of the face
+                for (let i = -0.25; i <= 0.25; i += 0.12) {
+                    const tooth = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.14, 0.08), toothMat);
+                    tooth.position.set(i, -0.32, 0.52);
+                    hatGroup.add(tooth);
+                }
+            }
+
+            return hatGroup;
+        }
+
+        /* ==========================================
+           AUDIO SYSTEM WITH SLIDER & MUTE
+           ========================================== */
+        class SoundEngine {
+            constructor() {
+                this.jumpSound = new Audio('https://github.com/olyiscool/robloxai/raw/refs/heads/main/jump.mp3');
+                this.walkSound = new Audio('https://github.com/olyiscool/robloxai/raw/refs/heads/main/walk.mp3');
+                this.msgSound = new Audio('https://github.com/olyiscool/olysgit/raw/refs/heads/main/gta-v-notification.mp3'); // Notification chime
+                this.walkSound.loop = true;
+                this.masterVolume = 1.0;
+                this.isMuted = false;
+                this.isWalkingPlaying = false;
+                this.applyVolume();
+            }
+
+            setVolume(vol) {
+                this.masterVolume = parseFloat(vol);
+                this.applyVolume();
+            }
+
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                this.applyVolume();
+                return this.isMuted;
+            }
+
+            applyVolume() {
+                const effectiveVol = this.isMuted ? 0 : this.masterVolume;
+                this.walkSound.volume = effectiveVol;
+                this.jumpSound.volume = effectiveVol;
+                this.msgSound.volume = effectiveVol;
+            }
+
+            playJump() {
+                this.jumpSound.currentTime = 0;
+                this.jumpSound.play().catch(() => {});
+            }
+
+            playMessageNotification() {
+                this.msgSound.currentTime = 0;
+                this.msgSound.play().catch(() => {});
+            }
+
+            startWalk() {
+                if (!this.isWalkingPlaying) {
+                    this.walkSound.currentTime = 0;
+                    this.walkSound.play().catch(() => {});
+                    this.isWalkingPlaying = true;
+                }
+            }
+
+            stopWalk() {
+                if (this.isWalkingPlaying) {
+                    this.walkSound.pause();
+                    this.isWalkingPlaying = false;
+                }
+            }
+        }
+
+        const audio = new SoundEngine();
+
+        function updateAudioVolume(val) {
+            audio.setVolume(val);
+        }
+
+        function toggleMuteAudio() {
+            const muted = audio.toggleMute();
+            document.getElementById('sound-mute-btn').innerText = muted ? '🔇' : '🔊';
+        }
+
+        /* ==========================================
+           CHARACTER FACTORY
+           ========================================== */
+        function createRobloxCharacter(customColors = avatarCustomization) {
+            const playerGroup = new THREE.Group();
+
+            const mat = (color) => new THREE.MeshStandardMaterial({ color, roughness: 0.4 });
+
+            const smileyTex = createSmileyTexture(customColors.head);
+
+            const headMaterials = [
+                mat(customColors.head),
+                mat(customColors.head),
+                mat(customColors.head),
+                mat(customColors.head),
+                new THREE.MeshStandardMaterial({
+                    map: smileyTex,
+                    roughness: 0.4
+                }),
+                mat(customColors.head)
+            ];
+
+            const head = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 1.0), headMaterials);
+            head.position.y = 3.35;
+            head.castShadow = true;
+            head.name = "head";
+            playerGroup.add(head);
+
+            if (customColors.activeHat && customColors.activeHat !== 'none') {
+                const hatMesh = createHatMesh(customColors.activeHat);
+                head.add(hatMesh);
+            }
+
+            const torsoMat = mat(customColors.torso);
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.0, 1.0), torsoMat);
+            torso.position.y = 1.9;
+            torso.castShadow = true;
+            torso.name = "torso";
+            playerGroup.add(torso);
+
+            const leftArmGroup = new THREE.Group();
+            leftArmGroup.position.set(-1.4, 2.8, 0);
+            const leftArmMat = mat(customColors.leftArm);
+            const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.8, 0.8), leftArmMat);
+            leftArm.position.y = -0.9;
+            leftArm.castShadow = true;
+            leftArm.name = "leftArm";
+            leftArmGroup.add(leftArm);
+            playerGroup.add(leftArmGroup);
+
+            const rightArmGroup = new THREE.Group();
+            rightArmGroup.position.set(1.4, 2.8, 0);
+            const rightArmMat = mat(customColors.rightArm);
+            const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.8, 0.8), rightArmMat);
+            rightArm.position.y = -0.9;
+            rightArm.castShadow = true;
+            rightArm.name = "rightArm";
+            rightArmGroup.add(rightArm);
+            playerGroup.add(rightArmGroup);
+
+            const leftLegGroup = new THREE.Group();
+            leftLegGroup.position.set(-0.5, 0.9, 0);
+            const leftLegMat = mat(customColors.leftLeg);
+            const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.8, 0.8), leftLegMat);
+            leftLeg.position.y = -0.9;
+            leftLeg.castShadow = true;
+            leftLeg.name = "leftLeg";
+            leftLegGroup.add(leftLeg);
+            playerGroup.add(leftLegGroup);
+
+            const rightLegGroup = new THREE.Group();
+            rightLegGroup.position.set(0.5, 0.9, 0);
+            const rightLegMat = mat(customColors.rightLeg);
+            const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.8, 0.8), rightLegMat);
+            rightLeg.position.y = -0.9;
+            rightLeg.castShadow = true;
+            rightLeg.name = "rightLeg";
+            rightLegGroup.add(rightLeg);
+            playerGroup.add(rightLegGroup);
+
+            playerGroup.limbs = { leftArmGroup, rightArmGroup, leftLegGroup, rightLegGroup };
+            playerGroup.bodyMeshes = { head, torso, leftArm, rightArm, leftLeg, rightLeg };
+            playerGroup.scale.set(0.85, 0.85, 0.85);
+
+            return playerGroup;
+        }
+
+        function updateCharacterColors(characterGroup, newColors) {
+            const meshes = characterGroup.bodyMeshes;
+
+            for(let i=0; i<4; i++) {
+                meshes.head.material[i].color.setHex(newColors.head);
+            }
+            meshes.head.material[5].color.setHex(newColors.head);
+
+            meshes.head.material[4].map = createSmileyTexture(newColors.head);
+            meshes.head.material[4].needsUpdate = true;
+
+            meshes.torso.material.color.setHex(newColors.torso);
+            meshes.leftArm.material.color.setHex(newColors.leftArm);
+            meshes.rightArm.material.color.setHex(newColors.rightArm);
+            meshes.leftLeg.material.color.setHex(newColors.leftLeg);
+            meshes.rightLeg.material.color.setHex(newColors.rightLeg);
+
+            const existingHat = meshes.head.getObjectByName("hat");
+            if (existingHat) meshes.head.remove(existingHat);
+
+            if (newColors.activeHat && newColors.activeHat !== 'none') {
+                const newHat = createHatMesh(newColors.activeHat);
+                meshes.head.add(newHat);
+            }
+        }
+
+        /* ==========================================
+           AVATAR PREVIEW CANVAS SYSTEM
+           ========================================== */
+        let previewScene, previewCamera, previewRenderer, previewCharacter, previewAnimationFrame;
+
+        function initAvatarPreview() {
+            const container = document.querySelector('.avatar-preview-box');
+            const canvas = document.getElementById('avatar-preview-canvas');
+
+            previewScene = new THREE.Scene();
+            previewScene.background = new THREE.Color(0x191b1d);
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+            previewScene.add(ambient);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(5, 10, 7);
+            previewScene.add(dirLight);
+
+            previewCharacter = createRobloxCharacter(avatarCustomization);
+            previewCharacter.position.set(0, -1.8, 0);
+            previewScene.add(previewCharacter);
+
+            previewCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+            previewCamera.position.set(0, 0.5, 7.5);
+
+            previewRenderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            previewRenderer.setSize(container.clientWidth, container.clientHeight);
+
+            function animatePreview() {
+                previewAnimationFrame = requestAnimationFrame(animatePreview);
+                previewCharacter.rotation.y += 0.01;
+                previewRenderer.render(previewScene, previewCamera);
+            }
+            animatePreview();
+        }
+
+        function selectBodyPart(part) {
+            activeSelectedPart = part;
+            document.querySelectorAll('.part-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            highlightActiveColorSwatch();
+        }
+
+        function selectHat(hatType) {
+            avatarCustomization.activeHat = hatType;
+            saveAvatarToStorage();
+            document.querySelectorAll('.hat-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            updateCharacterColors(previewCharacter, avatarCustomization);
+        }
+
+        function buildColorPalette() {
+            const container = document.getElementById('color-palette');
+            container.innerHTML = '';
+            
+            presetColors.forEach(color => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch';
+                const hexStr = '#' + color.toString(16).padStart(6, '0');
+                swatch.style.backgroundColor = hexStr;
+                swatch.dataset.colorHex = color;
+                swatch.onclick = () => applyColorToSelectedPart(hexStr);
+                container.appendChild(swatch);
+            });
+            highlightActiveColorSwatch();
+        }
+
+        function highlightActiveColorSwatch() {
+            const currentColor = activeSelectedPart === 'all' ? avatarCustomization.torso : avatarCustomization[activeSelectedPart];
+            document.querySelectorAll('.color-swatch').forEach(swatch => {
+                if (parseInt(swatch.dataset.colorHex) === currentColor) {
+                    swatch.classList.add('selected');
+                } else {
+                    swatch.classList.remove('selected');
+                }
+            });
+        }
+
+        function applyColorToSelectedPart(hexValue) {
+            const numColor = parseInt(hexValue.replace('#', '0x'), 16);
+
+            if (activeSelectedPart === 'all') {
+                for (let part in avatarCustomization) {
+                    if (part !== 'activeHat') avatarCustomization[part] = numColor;
+                }
+            } else {
+                avatarCustomization[activeSelectedPart] = numColor;
+            }
+
+            saveAvatarToStorage();
+            document.getElementById('html-color-wheel').value = '#' + numColor.toString(16).padStart(6, '0');
+
+            highlightActiveColorSwatch();
+            updateCharacterColors(previewCharacter, avatarCustomization);
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+
+            if (tabName === 'home') {
+                document.querySelectorAll('.nav-item')[0].classList.add('active');
+                document.getElementById('tab-home').classList.add('active');
+                if (previewAnimationFrame) cancelAnimationFrame(previewAnimationFrame);
+            } else if (tabName === 'avatar') {
+                document.querySelectorAll('.nav-item')[1].classList.add('active');
+                document.getElementById('tab-avatar').classList.add('active');
+                initAvatarPreview();
+                buildColorPalette();
+            } else if (tabName === 'friends') {
+                document.querySelectorAll('.nav-item')[2].classList.add('active');
+                document.getElementById('tab-friends').classList.add('active');
+                if (previewAnimationFrame) cancelAnimationFrame(previewAnimationFrame);
+                renderFriendsList();
+            } else if (tabName === 'chat') {
+                document.querySelectorAll('.nav-item')[3].classList.add('active');
+                document.getElementById('tab-chat').classList.add('active');
+                if (previewAnimationFrame) cancelAnimationFrame(previewAnimationFrame);
+                clearUnreadBadge();
+                renderChatThreads();
+            } else if (tabName === 'account') {
+                document.querySelectorAll('.nav-item')[4].classList.add('active');
+                document.getElementById('tab-account').classList.add('active');
+                if (previewAnimationFrame) cancelAnimationFrame(previewAnimationFrame);
+            }
+        }
+
+        /* ==========================================
+           FRIENDS, PEERJS, AND CHAT HUB SYSTEM
+           ========================================== */
+        let myPeerId = localStorage.getItem('boblox_peer_id');
+        if (!myPeerId) {
+            myPeerId = 'boblox_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('boblox_peer_id', myPeerId);
+        }
+
+        let peer = null;
+        let activeConnections = {}; // peerId -> connection
+        let remotePlayers = {}; // peerId -> mesh group
+        let friendsList = JSON.parse(localStorage.getItem('boblox_friends') || '[]');
+        let friendMetadata = {}; // peerId -> { username, color, inGame, gameRoom }
+        let pendingFriendRequests = {};
+        let lastWhisperSender = null;
+        let currentGameRoom = null;
+
+        // Chat Hub Store
+        let chatThreads = JSON.parse(localStorage.getItem('boblox_chat_threads') || '{}'); 
+        let activeChatThreadId = null;
+        let unreadMessageCount = 0;
+        let activeDmSenderId = null;
+
+        function saveChatThreadsStorage() {
+            localStorage.setItem('boblox_chat_threads', JSON.stringify(chatThreads));
+        }
+
+        function clearUnreadBadge() {
+            unreadMessageCount = 0;
+            const badge = document.getElementById('nav-chat-badge');
+            if (badge) {
+                badge.style.display = 'none';
+                badge.innerText = '0';
+            }
+        }
+
+        function incrementUnreadBadge() {
+            const activeTab = document.getElementById('tab-chat');
+            if (!activeTab || !activeTab.classList.contains('active')) {
+                unreadMessageCount++;
+                const badge = document.getElementById('nav-chat-badge');
+                if (badge) {
+                    badge.style.display = 'inline-block';
+                    badge.innerText = unreadMessageCount;
+                }
+            }
+        }
+
+        function saveFriendsList() {
+            friendsList = [...new Set(friendsList)];
+            localStorage.setItem('boblox_friends', JSON.stringify(friendsList));
+        }
+
+        function addFriendLocally(friendId) {
+            if (!friendId || friendId === myPeerId) return;
+            if (!friendsList.includes(friendId)) friendsList.push(friendId);
+            saveFriendsList();
+            ensureDirectChatThread(friendId);
+            renderFriendsList();
+        }
+
+        function ensureDirectChatThread(friendId, friendName = friendId) {
+            if (!chatThreads[friendId]) {
+                chatThreads[friendId] = {
+                    name: friendName,
+                    isGroup: false,
+                    members: [friendId],
+                    messages: []
+                };
+                saveChatThreadsStorage();
+            }
+        }
+
+        function ensurePeerConnection(peerId, onOpen) {
+            if (activeConnections[peerId] && activeConnections[peerId].open) {
+                if (onOpen) onOpen(activeConnections[peerId]);
+                return activeConnections[peerId];
+            }
+
+            const conn = peer.connect(peerId, { reliable: true });
+            setupConnection(conn);
+            if (onOpen) conn.on('open', () => onOpen(conn));
+            return conn;
+        }
+
+        function showFriendRequest(peerId, username, color) {
+            pendingFriendRequests[peerId] = { username: username || peerId, color: color || '#ffffff' };
+
+            const box = document.getElementById('friend-request-notification');
+            const text = document.getElementById('friend-request-text');
+            if (!box || !text) return;
+
+            text.innerHTML = `<span style="color:${color || '#ffffff'};font-weight:bold;">${username || peerId}</span> wants to be your friend.`;
+            box.style.display = 'block';
+        }
+
+        function hideFriendRequest(peerId) {
+            delete pendingFriendRequests[peerId];
+            const box = document.getElementById('friend-request-notification');
+            if (!box) return;
+            if (Object.keys(pendingFriendRequests).length === 0) box.style.display = 'none';
+        }
+
+        function acceptFriendRequest() {
+            const peerIds = Object.keys(pendingFriendRequests);
+            if (!peerIds.length) return;
+            const peerId = peerIds[0];
+
+            const requestName = pendingFriendRequests[peerId]?.username || peerId;
+            addFriendLocally(peerId);
+            const conn = activeConnections[peerId];
+
+            if (conn && conn.open) {
+                conn.send({
+                    type: 'friend_request_accepted',
+                    username: currentUsername,
+                    color: currentUsernameColor
+                });
+            } else {
+                ensurePeerConnection(peerId, (openConn) => {
+                    openConn.send({
+                        type: 'friend_request_accepted',
+                        username: currentUsername,
+                        color: currentUsernameColor
+                    });
+                });
+            }
+
+            hideFriendRequest(peerId);
+            addRobloxChatMessage(`<span style="color:#32a852;">[Friends]:</span> You are now friends with ${requestName}.`);
+        }
+
+        function declineFriendRequest() {
+            const peerIds = Object.keys(pendingFriendRequests);
+            if (!peerIds.length) return;
+            const peerId = peerIds[0];
+            const conn = activeConnections[peerId];
+
+            if (conn && conn.open) {
+                conn.send({ type: 'friend_request_declined' });
+            }
+
+            hideFriendRequest(peerId);
+        }
+
+        function showDmPopup(senderId, senderName, text) {
+            activeDmSenderId = senderId;
+            const popup = document.getElementById('dm-popup-notification');
+            const title = document.getElementById('dm-popup-title');
+            const content = document.getElementById('dm-popup-text');
+            const btns = document.getElementById('dm-popup-btns');
+            const replyContainer = document.getElementById('dm-reply-container');
+
+            if (!popup) return;
+            title.innerText = `Message from ${senderName}`;
+            content.innerText = text;
+            btns.style.display = 'flex';
+            replyContainer.style.display = 'none';
+            popup.style.display = 'block';
+        }
+
+        function openDmAnswerInput() {
+            const btns = document.getElementById('dm-popup-btns');
+            const replyContainer = document.getElementById('dm-reply-container');
+            const replyInput = document.getElementById('dm-reply-input');
+
+            if (btns) btns.style.display = 'none';
+            if (replyContainer) replyContainer.style.display = 'flex';
+            if (replyInput) replyInput.focus();
+        }
+
+        function ignoreDmPopup() {
+            const popup = document.getElementById('dm-popup-notification');
+            if (popup) popup.style.display = 'none';
+            activeDmSenderId = null;
+        }
+
+        function sendDmReply() {
+            const replyInput = document.getElementById('dm-reply-input');
+            const text = replyInput.value.trim();
+            if (!text || !activeDmSenderId) return;
+
+            ensureDirectChatThread(activeDmSenderId, friendMetadata[activeDmSenderId]?.username || activeDmSenderId);
+            chatThreads[activeDmSenderId].messages.push({
+                sender: currentUsername,
+                color: currentUsernameColor,
+                text: text
+            });
+            saveChatThreadsStorage();
+
+            ensurePeerConnection(activeDmSenderId, (conn) => {
+                conn.send({
+                    type: 'chat',
+                    user: currentUsername,
+                    color: currentUsernameColor,
+                    text: text
+                });
+            });
+
+            replyInput.value = '';
+            ignoreDmPopup();
+            if (activeChatThreadId === activeDmSenderId) {
+                renderChatMessages();
+            }
+            renderChatThreads();
+        }
+
+        function handleDmReplyKey(e) {
+            if (e.key === 'Enter') sendDmReply();
+        }
+
+        function initPeerJS() {
+            peer = new Peer(myPeerId);
+
+            peer.on('open', (id) => {
+                console.log('Peer connected with ID:', id);
+            });
+
+            peer.on('connection', (conn) => {
+                setupConnection(conn);
+            });
+        }
+
+        function setupConnection(conn) {
+            conn.on('open', () => {
+                activeConnections[conn.peer] = conn;
+                conn.send({ 
+                    type: 'handshake', 
+                    username: currentUsername, 
+                    color: currentUsernameColor, 
+                    avatar: avatarCustomization,
+                    inGame: isGameRunning,
+                    gameRoom: currentGameRoom
+                });
+            });
+
+            conn.on('data', (data) => {
+                handlePeerData(conn.peer, data);
+            });
+
+            conn.on('close', () => {
+                removeRemotePlayer(conn.peer);
+                delete activeConnections[conn.peer];
+                updatePlayerCounts();
+                renderFriendsList();
+            });
+        }
+
+        function handlePeerData(peerId, data) {
+            if (data.type === 'handshake') {
+                friendMetadata[peerId] = {
+                    username: data.username || peerId,
+                    color: data.color || '#ffffff',
+                    inGame: data.inGame,
+                    gameRoom: data.gameRoom
+                };
+                ensureDirectChatThread(peerId, data.username || peerId);
+                activeConnections[peerId]?.send({
+                    type: 'handshake_reply',
+                    username: currentUsername,
+                    color: currentUsernameColor,
+                    avatar: avatarCustomization,
+                    inGame: isGameRunning,
+                    gameRoom: currentGameRoom
+                });
+                renderFriendsList();
+            } else if (data.type === 'handshake_reply') {
+                friendMetadata[peerId] = {
+                    username: data.username || peerId,
+                    color: data.color || '#ffffff',
+                    inGame: data.inGame,
+                    gameRoom: data.gameRoom
+                };
+                ensureDirectChatThread(peerId, data.username || peerId);
+                renderFriendsList();
+            } else if (data.type === 'friend_request') {
+                friendMetadata[peerId] = {
+                    username: data.username || peerId,
+                    color: data.color || '#ffffff',
+                    inGame: data.inGame,
+                    gameRoom: data.gameRoom
+                };
+                showFriendRequest(peerId, data.username || peerId, data.color || '#ffffff');
+            } else if (data.type === 'friend_request_accepted') {
+                addFriendLocally(peerId);
+                friendMetadata[peerId] = {
+                    ...(friendMetadata[peerId] || {}),
+                    username: data.username || friendMetadata[peerId]?.username || peerId,
+                    color: data.color || friendMetadata[peerId]?.color || '#ffffff'
+                };
+                addRobloxChatMessage(`<span style="color:#32a852;">[Friends]:</span> ${data.username || peerId} accepted your friend request.`);
+            } else if (data.type === 'friend_request_declined') {
+                addRobloxChatMessage(`<span style="color:#d90429;">[Friends]:</span> Your friend request was declined.`);
+            } else if (data.type === 'position') {
+                updateRemotePlayer(peerId, data);
+            } else if (data.type === 'chat') {
+                handleIncomingHubMessage(peerId, data.user || peerId, data.text || '');
+            } else if (data.type === 'group_chat') {
+                handleIncomingGroupMessage(data.threadId, data.senderName, data.senderColor, data.text, data.members);
+            } else if (data.type === 'whisper') {
+                lastWhisperSender = peerId;
+                addRobloxChatMessage(`<span style="color: #ff751a; font-style: italic;>[Whisper from ${data.user || peerId}]:</span> ${data.text || ''}`);
+                handleIncomingHubMessage(peerId, data.user || peerId, data.text || '');
+            }
+        }
+
+        function handleIncomingHubMessage(senderId, senderName, text) {
+            ensureDirectChatThread(senderId, senderName);
+            chatThreads[senderId].messages.push({
+                sender: senderName,
+                color: friendMetadata[senderId]?.color || '#ffffff',
+                text: text
+            });
+            saveChatThreadsStorage();
+
+            audio.playMessageNotification();
+            incrementUnreadBadge();
+            showDmPopup(senderId, senderName, text);
+
+            if (activeChatThreadId === senderId) {
+                renderChatMessages();
+            }
+            renderChatThreads();
+        }
+
+        function handleIncomingGroupMessage(threadId, senderName, senderColor, text, members) {
+            if (!chatThreads[threadId]) {
+                chatThreads[threadId] = {
+                    name: 'Group Chat (' + members.length + ')',
+                    isGroup: true,
+                    members: members,
+                    messages: []
+                };
+            }
+
+            chatThreads[threadId].messages.push({
+                sender: senderName,
+                color: senderColor,
+                text: text
+            });
+            saveChatThreadsStorage();
+
+            audio.playMessageNotification();
+            incrementUnreadBadge();
+
+            if (activeChatThreadId === threadId) {
+                renderChatMessages();
+            }
+            renderChatThreads();
+        }
+
+        function renderChatThreads() {
+            const listContainer = document.getElementById('chat-threads-list');
+            if (!listContainer) return;
+            listContainer.innerHTML = '';
+
+            const threadIds = Object.keys(chatThreads);
+            if (threadIds.length === 0) {
+                listContainer.innerHTML = `<div style="padding:15px; color:var(--text-muted); font-size:12px;">No active conversations. Add friends or create a group chat.</div>`;
+                return;
+            }
+
+            threadIds.forEach(tId => {
+                const thread = chatThreads[tId];
+                const item = document.createElement('div');
+                item.className = 'chat-thread-item' + (activeChatThreadId === tId ? ' active' : '');
+                item.onclick = () => selectChatThread(tId);
+
+                let lastMsg = thread.messages.length ? thread.messages[thread.messages.length - 1].text : 'No messages yet';
+                if (lastMsg.length > 25) lastMsg = lastMsg.substring(0, 25) + '...';
+
+                item.innerHTML = `
+                    <div>
+                        <div style="font-size:14px; color:var(--text-main);">${thread.name}</div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${lastMsg}</div>
+                    </div>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        function selectChatThread(tId) {
+            activeChatThreadId = tId;
+            const thread = chatThreads[tId];
+            if (!thread) return;
+
+            document.getElementById('active-chat-title').innerText = thread.name;
+            document.getElementById('chat-input-container').style.display = 'flex';
+
+            renderChatThreads();
+            renderChatMessages();
+        }
+
+        function renderChatMessages() {
+            const area = document.getElementById('chat-messages-area');
+            if (!area || !activeChatThreadId) return;
+            area.innerHTML = '';
+
+            const thread = chatThreads[activeChatThreadId];
+            if (!thread || thread.messages.length === 0) {
+                area.innerHTML = `<div style="color:var(--text-muted); text-align:center; margin-top:50px;">Say hello to start the conversation!</div>`;
+                return;
+            }
+
+            thread.messages.forEach(msg => {
+                const bubble = document.createElement('div');
+                bubble.className = 'chat-message-bubble';
+                const isMe = msg.sender === currentUsername;
+                bubble.style.alignSelf = isMe ? 'flex-end' : 'flex-start';
+                bubble.style.background = isMe ? 'rgba(0, 162, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)';
+
+                bubble.innerHTML = `
+                    <div style="font-size:11px; color:${msg.color}; margin-bottom:3px;">${msg.sender}</div>
+                    <div>${msg.text}</div>
+                `;
+                area.appendChild(bubble);
+            });
+            area.scrollTop = area.scrollHeight;
+        }
+
+        function sendChatTabMessage() {
+            const input = document.getElementById('chat-tab-input');
+            const text = input.value.trim();
+            if (!text || !activeChatThreadId) return;
+
+            const thread = chatThreads[activeChatThreadId];
+            const msgObj = {
+                sender: currentUsername,
+                color: currentUsernameColor,
+                text: text
+            };
+
+            thread.messages.push(msgObj);
+            saveChatThreadsStorage();
+            input.value = '';
+
+            renderChatMessages();
+            renderChatThreads();
+
+            if (!thread.isGroup) {
+                ensurePeerConnection(activeChatThreadId, (conn) => {
+                    conn.send({
+                        type: 'chat',
+                        user: currentUsername,
+                        color: currentUsernameColor,
+                        text: text
+                    });
+                });
+            } else {
+                thread.members.forEach(memberId => {
+                    if (memberId !== myPeerId) {
+                        ensurePeerConnection(memberId, (conn) => {
+                            conn.send({
+                                type: 'group_chat',
+                                threadId: activeChatThreadId,
+                                senderName: currentUsername,
+                                senderColor: currentUsernameColor,
+                                text: text,
+                                members: thread.members
+                            });
+                        });
+                    }
+                });
+            }
+        }
+
+        function handleChatTabInputKey(e) {
+            if (e.key === 'Enter') sendChatTabMessage();
+        }
+
+        function openCreateGroupModal() {
+            if (friendsList.length === 0) {
+                alert('You need to add friends first before making a group chat!');
+                return;
+            }
+
+            let friendOptions = friendsList.map(fId => `${fId} (${friendMetadata[fId]?.username || fId})`).join('\n');
+            let selectedInput = prompt(`Enter friend Peer IDs separated by commas to include in your group chat:\n\nAvailable Friends:\n${friendOptions}`);
+            if (!selectedInput) return;
+
+            let invitedPeers = selectedInput.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            if (invitedPeers.length === 0) return;
+
+            invitedPeers.push(myPeerId);
+            invitedPeers = [...new Set(invitedPeers)];
+
+            const newGroupId = 'group_' + Math.random().toString(36).substr(2, 9);
+            chatThreads[newGroupId] = {
+                name: 'Group Chat (' + invitedPeers.length + ')',
+                isGroup: true,
+                members: invitedPeers,
+                messages: []
+            };
+            saveChatThreadsStorage();
+            selectChatThread(newGroupId);
+        }
+
+        function updateRemotePlayer(peerId, data) {
+            if (!isGameRunning) return;
+            if (!remotePlayers[peerId]) {
+                const remoteChar = createRobloxCharacter(data.avatar || avatarCustomization);
+                scene.add(remoteChar);
+                remotePlayers[peerId] = remoteChar;
+            }
+            const p = remotePlayers[peerId];
+            
+            p.position.x += (data.x - p.position.x) * 0.3;
+            p.position.y += (data.y - p.position.y) * 0.3;
+            p.position.z += (data.z - p.position.z) * 0.3;
+            p.rotation.y = data.ry;
+
+            if (data.lax !== undefined) {
+                p.limbs.leftArmGroup.rotation.x = data.lax;
+                p.limbs.rightArmGroup.rotation.x = data.rax;
+                p.limbs.leftLegGroup.rotation.x = data.llx;
+                p.limbs.rightLegGroup.rotation.x = data.rlx;
+            }
+        }
+
+        function removeRemotePlayer(peerId) {
+            if (remotePlayers[peerId]) {
+                scene.remove(remotePlayers[peerId]);
+                delete remotePlayers[peerId];
+            }
+        }
+
+        function addFriend() {
+            const input = document.getElementById('add-friend-input');
+            const friendId = input.value.trim();
+
+            if (!friendId || friendId === myPeerId) return;
+            if (friendsList.includes(friendId)) {
+                input.value = '';
+                return;
+            }
+
+            input.value = '';
+
+            ensurePeerConnection(friendId, (conn) => {
+                conn.send({
+                    type: 'friend_request',
+                    username: currentUsername,
+                    color: currentUsernameColor,
+                    inGame: isGameRunning,
+                    gameRoom: currentGameRoom
+                });
+            });
+
+            renderFriendsList();
+        }
+
+        function renderFriendsList() {
+            const container = document.getElementById('friends-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            if (friendsList.length === 0) {
+                container.innerHTML = `<div style="color: var(--text-muted); font-size: 13px;">No friends added yet. Your Peer ID is: <b style="color:var(--text-main);">${myPeerId}</b></div>`;
+                return;
+            }
+
+            friendsList.forEach(fId => {
+                const meta = friendMetadata[fId] || { username: fId, color: '#ffffff', inGame: false };
+                const row = document.createElement('div');
+                row.className = 'friend-row';
+                
+                let actionButtons = `<button style="background: var(--accent-blue); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;" onclick="openFriendChat('${fId}')">Chat</button>`;
+                if (meta.inGame) {
+                    actionButtons += ` <button style="background: var(--accent-green); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;" onclick="launchGame('${meta.gameRoom || 'Obby'}')">Join</button>`;
+                }
+
+                row.innerHTML = `
+                    <div class="friend-info">
+                        <div class="friend-status-dot" id="friend-dot-${fId}"></div>
+                        <div>
+                            <span style="color: ${meta.color};">${meta.username}</span>
+                            <div style="font-size: 11px; color: var(--text-muted);">${meta.inGame ? '🟢 Playing ' + meta.gameRoom : '⚪ Online'}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        ${actionButtons}
+                        <button style="background: #d90429; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;" onclick="removeFriend('${fId}')">X</button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+            checkFriendsStatus();
+        }
+
+        function openFriendChat(fId) {
+            ensureDirectChatThread(fId, friendMetadata[fId]?.username || fId);
+            switchTab('chat');
+            selectChatThread(fId);
+        }
+
+        function removeFriend(fId) {
+            friendsList = friendsList.filter(id => id !== fId);
+            localStorage.setItem('boblox_friends', JSON.stringify(friendsList));
+            renderFriendsList();
+        }
+
+        function checkFriendsStatus() {
+            friendsList.forEach(fId => {
+                const dot = document.getElementById(`friend-dot-${fId}`);
+                const conn = ensurePeerConnection(fId);
+                if (conn) {
+                    conn.on('open', () => {
+                        if (dot) dot.classList.add('online');
+                    });
+                    conn.on('error', () => {
+                        if (dot) dot.classList.remove('online');
+                    });
+                }
+            });
+        }
+
+        function updatePlayerCounts() {
+            let count = Object.keys(activeConnections).length + 1;
+            const countObby = document.getElementById('count-obby');
+            const countBaseplate = document.getElementById('count-baseplate');
+            if (countObby) countObby.innerText = count + ' players in game';
+            if (countBaseplate) countBaseplate.innerText = count + ' players in game';
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initPeerJS();
+            setInterval(updatePlayerCounts, 2000);
+            friendsList.forEach(fId => ensureDirectChatThread(fId));
+        });
+
+        /* ==========================================
+           IN-GAME CHAT
+           ========================================== */
+        const robloxChatInput = document.getElementById('roblox-chat-input');
+        const robloxChatMessages = document.getElementById('roblox-chat-messages');
+
+        function toggleChatPanel() {
+            const panel = document.getElementById('roblox-chat-panel');
+            const inputWrap = document.getElementById('roblox-chat-input-wrap');
+            const isHidden = getComputedStyle(panel).display === 'none';
+            panel.style.display = isHidden ? 'block' : 'none';
+            inputWrap.style.display = isHidden ? 'block' : 'none';
+        }
+
+        function addRobloxChatMessage(htmlContent) {
+            const line = document.createElement('div');
+            line.className = 'roblox-chat-system';
+            line.innerHTML = htmlContent;
+            robloxChatMessages.appendChild(line);
+
+            while (robloxChatMessages.children.length > 7) {
+                robloxChatMessages.removeChild(robloxChatMessages.firstChild);
+            }
+        }
+
+        robloxChatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const message = robloxChatInput.value.trim();
+                if (message) {
+                    const sender = currentUsername || 'Player';
+                    const userColor = currentUsernameColor || '#00a2ff';
+
+                    if (message.startsWith('/r ')) {
+                        const whisperText = message.substring(3).trim();
+                        if (lastWhisperSender && whisperText) {
+                            ensurePeerConnection(lastWhisperSender, (conn) => {
+                                conn.send({ type: 'whisper', user: sender, color: userColor, text: whisperText });
+                            });
+                            addRobloxChatMessage(`<span style="color: #ff751a; font-style: italic;">[Whisper sent]:</span> ${whisperText}`);
+                            handleIncomingHubMessage(lastWhisperSender, friendMetadata[lastWhisperSender]?.username || lastWhisperSender, whisperText);
+                        } else {
+                            addRobloxChatMessage(`<span style="color: red;">[System]:</span> No recent whisper to reply to.`);
+                        }
+                    } else {
+                        const formattedMessage = `<span style="color: ${userColor};">[${sender}]:</span> ${message}`;
+                        addRobloxChatMessage(formattedMessage);
+
+                        for (let pId in activeConnections) {
+                            const conn = activeConnections[pId];
+                            if (conn && conn.open) {
+                                conn.send({ type: 'ingame_chat', user: sender, color: userColor, text: message });
+                            }
+                        }
+                    }
+                    
+                    robloxChatInput.value = '';
+                }
+            }
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === '/' && isGameRunning && document.activeElement !== robloxChatInput) {
+                e.preventDefault();
+                robloxChatInput.focus();
+            }
+        });
+
+        /* ==========================================
+           GAME ENGINE & STATE
+           ========================================== */
+        let scene, camera, renderer, character, animationFrameId;
+        let isGameRunning = false;
+        let shiftLock = false;
+        let collisionPlatforms = [];
+        let isEscMenuOpen = false;
+
+        function toggleEscMenu() {
+            if (!isGameRunning) return;
+            isEscMenuOpen = !isEscMenuOpen;
+            const escOverlay = document.getElementById('esc-menu-overlay');
+            escOverlay.style.display = isEscMenuOpen ? 'flex' : 'none';
+
+            if (isEscMenuOpen && document.pointerLockElement) {
+                document.exitPointerLock();
+            }
+        }
+
+        function respawnPlayer() {
+            if (character) {
+                character.position.set(0, 5.78, 0);
+                verticalVelocity = 0;
+            }
+            toggleEscMenu();
+        }
+
+        function launchGame(gameName) {
+            currentGameRoom = gameName;
+            document.getElementById('ui-overlay').style.display = 'none';
+            document.getElementById('game-view').style.display = 'block';
+            isGameRunning = false;
+            initScene(gameName);
+            isGameRunning = true;
+            animate();
+        }
+
+        function exitGame() {
+            isGameRunning = false;
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            audio.stopWalk();
+            document.getElementById('game-view').style.display = 'none';
+            document.getElementById('ui-overlay').style.display = 'flex';
+            if (document.pointerLockElement) document.exitPointerLock();
+            currentGameRoom = null;
+        }
+
+        /* ==========================================
+           CONTROLS & SHIFT LOCK SYSTEM
+           ========================================== */
+        const keys = { w: false, a: false, s: false, d: false, Space: false, Left: false, Right: false };
+        let cameraAngleX = 0;
+        let cameraAngleY = 0.25;
+        let cameraDistance = 10;
+        let isMouseDown = false;
+
+        function isUserTyping() {
+            const el = document.activeElement;
+            return el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+        }
+
+        function resetInputKeys() {
+            keys.w = false;
+            keys.a = false;
+            keys.s = false;
+            keys.d = false;
+            keys.Space = false;
+            keys.Left = false;
+            keys.Right = false;
+        }
+
+        function updateShiftLockUI() {
+            document.getElementById('crosshair').style.display = shiftLock ? 'block' : 'none';
+            const escBtn = document.getElementById('esc-shiftlock-btn');
+            if (escBtn) escBtn.innerText = shiftLock ? 'ON' : 'OFF';
+        }
+
+        function toggleShiftLock() {
+            shiftLock = !shiftLock;
+            updateShiftLockUI();
+
+            if (shiftLock && isGameRunning && !isEscMenuOpen) {
+                const canvas = document.getElementById('game-canvas');
+                canvas.requestPointerLock();
+            } else if (!shiftLock && document.pointerLockElement) {
+                document.exitPointerLock();
+            }
+        }
+
+        document.addEventListener('pointerlockchange', () => {
+            if (document.pointerLockElement !== document.getElementById('game-canvas')) {
+                if (shiftLock && isGameRunning && !isEscMenuOpen) {
+                    toggleEscMenu();
+                }
+                shiftLock = false;
+                updateShiftLockUI();
+            }
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Escape' && isGameRunning) {
+                toggleEscMenu();
+                return;
+            }
+
+            if (isUserTyping()) {
+                resetInputKeys();
+                return;
+            }
+
+            if (e.code === 'KeyW') keys.w = true;
+            if (e.code === 'KeyA') keys.a = true;
+            if (e.code === 'KeyS') keys.s = true;
+            if (e.code === 'KeyD') keys.d = true;
+            if (e.code === 'ArrowLeft') keys.Left = true;
+            if (e.code === 'ArrowRight') keys.Right = true;
+            if (e.code === 'Space') keys.Space = true;
+
+            if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+                if (isGameRunning && !isEscMenuOpen) toggleShiftLock();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (isUserTyping()) {
+                resetInputKeys();
+                return;
+            }
+
+            if (e.code === 'KeyW') keys.w = false;
+            if (e.code === 'KeyA') keys.a = false;
+            if (e.code === 'KeyS') keys.s = false;
+            if (e.code === 'KeyD') keys.d = false;
+            if (e.code === 'ArrowLeft') keys.Left = false;
+            if (e.code === 'ArrowRight') keys.Right = false;
+            if (e.code === 'Space') keys.Space = false;
+        });
+
+        window.addEventListener('mousedown', (e) => {
+            if (!isGameRunning || isEscMenuOpen || isUserTyping()) return;
+            if (e.button === 0 || e.button === 2) isMouseDown = true;
+        });
+
+        window.addEventListener('mouseup', () => isMouseDown = false);
+        window.addEventListener('contextmenu', e => isGameRunning && e.preventDefault());
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isGameRunning || isEscMenuOpen || isUserTyping()) return;
+
+            if (shiftLock || isMouseDown) {
+                cameraAngleX -= e.movementX * (shiftLock ? 0.003 : 0.005);
+                cameraAngleY += e.movementY * (shiftLock ? 0.003 : 0.005);
+                cameraAngleY = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, cameraAngleY));
+            }
+        });
+
+        window.addEventListener('wheel', (e) => {
+            if (!isGameRunning || isEscMenuOpen || isUserTyping()) return;
+            cameraDistance += e.deltaY * 0.01;
+            cameraDistance = Math.max(4, Math.min(30, cameraDistance));
+        });
+
+        /* ==========================================
+           SQUARE STUDDED PLATFORM FACTORY
+           ========================================== */
+        function createStuddedPlatform(width, height, depth, colorHex) {
+            const group = new THREE.Group();
+
+            const topTexture = studTextureTemplate.clone();
+            topTexture.needsUpdate = true;
+            topTexture.repeat.set(width * 2.5, depth * 2.5);
+
+            const sideMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.6 });
+            const topMat = new THREE.MeshStandardMaterial({ color: colorHex, map: topTexture, roughness: 0.5 });
+
+            const materials = [ sideMat, sideMat, topMat, sideMat, sideMat, sideMat ];
+
+            const box = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), materials);
+            box.receiveShadow = true;
+            box.castShadow = true;
+            group.add(box);
+
+            return group;
+        }
+
+        /* ==========================================
+           WORLD SCENE SETUP
+           ========================================== */
+        function initScene(gameType) {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x6eb1ff);
+            scene.fog = new THREE.FogExp2(0x6eb1ff, 0.015);
+
+            collisionPlatforms = [];
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(50, 100, 50);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            scene.add(dirLight);
+
+            const baseWidth = 200, baseHeight = 2, baseDepth = 200;
+            const baseplate = createStuddedPlatform(baseWidth, baseHeight, baseDepth, 0xa0a0a0);
+            baseplate.position.set(0, -1, 0);
+            scene.add(baseplate);
+
+            collisionPlatforms.push({
+                minX: -baseWidth / 2, maxX: baseWidth / 2,
+                minY: -2, maxY: 0,
+                minZ: -baseDepth / 2, maxZ: baseDepth / 2
+            });
+
+            if (gameType === 'Obby') {
+                for (let i = 0; i < 15; i++) {
+                    const width = 6, height = 1.2, depth = 6;
+                    const randomColor = Math.floor(Math.random() * 0xffffff);
+                    const platform = createStuddedPlatform(width, height, depth, randomColor);
+                    
+                    const posX = Math.sin(i) * 10;
+                    const posY = i * 2.5 + 2;
+                    const posZ = -i * 10 - 8;
+
+                    platform.position.set(posX, posY, posZ);
+                    scene.add(platform);
+
+                    collisionPlatforms.push({
+                        minX: posX - width / 2, maxX: posX + width / 2,
+                        minY: posY - height / 2, maxY: posY + height / 2,
+                        minZ: posZ - depth / 2, maxZ: posZ + depth / 2
+                    });
+                }
+            }
+
+            character = createRobloxCharacter(avatarCustomization);
+            character.position.set(0, 0.78, 0);
+            scene.add(character);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            const canvas = document.getElementById('game-canvas');
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        }
+
+        /* ==========================================
+           MAIN LOOP & MOVEMENT PHYSICS
+           ========================================== */
+        let walkCycle = 0;
+        let verticalVelocity = 0;
+        const gravity = -0.015;
+        const jumpStrength = 0.38;
+        const playerRadius = 0.7;
+        const playerHeight = 3.2;
+        const footOffset = 0.78;
+        let syncTimer = 0;
+
+        function animate() {
+            if (!isGameRunning) return;
+            animationFrameId = requestAnimationFrame(animate);
+
+            if (!isEscMenuOpen) {
+                if (isUserTyping()) {
+                    resetInputKeys();
+                }
+
+                if (keys.Left) cameraAngleX += 0.03;
+                if (keys.Right) cameraAngleX -= 0.03;
+
+                const speed = 0.16;
+                let inputX = 0, inputZ = 0;
+
+                if (keys.w) inputZ += 1;
+                if (keys.s) inputZ -= 1;
+                if (keys.a) inputX -= 1;
+                if (keys.d) inputX += 1;
+
+                const isMoving = inputX !== 0 || inputZ !== 0;
+                let moveVectorX = 0, moveVectorZ = 0;
+
+                if (isMoving) {
+                    const forwardX = -Math.sin(cameraAngleX);
+                    const forwardZ = -Math.cos(cameraAngleX);
+                    const rightX = -forwardZ;
+                    const rightZ = forwardX;
+
+                    moveVectorX = (forwardX * inputZ + rightX * inputX);
+                    moveVectorZ = (forwardZ * inputZ + rightZ * inputX);
+
+                    const moveLen = Math.hypot(moveVectorX, moveVectorZ);
+                    if (moveLen > 0) {
+                        moveVectorX = (moveVectorX / moveLen) * speed;
+                        moveVectorZ = (moveVectorZ / moveLen) * speed;
+                    }
+
+                    if (shiftLock) {
+                        character.rotation.y = cameraAngleX + Math.PI;
+                    } else {
+                        const movementAngle = Math.atan2(moveVectorX, moveVectorZ);
+                        character.rotation.y = THREE.MathUtils.lerp(character.rotation.y, movementAngle, 0.2);
+                    }
+                } else if (shiftLock) {
+                    character.rotation.y = cameraAngleX + Math.PI;
+                }
+
+                character.position.x += moveVectorX;
+                for (const plat of collisionPlatforms) {
+                    if (
+                        character.position.y < plat.maxY && character.position.y + playerHeight > plat.minY &&
+                        character.position.z + playerRadius > plat.minZ && character.position.z - playerRadius < plat.maxZ
+                    ) {
+                        if (character.position.x + playerRadius > plat.minX && character.position.x - playerRadius < plat.maxX) {
+                            if (moveVectorX > 0) character.position.x = plat.minX - playerRadius;
+                            if (moveVectorX < 0) character.position.x = plat.maxX + playerRadius;
+                        }
+                    }
+                }
+
+                character.position.z += moveVectorZ;
+                for (const plat of collisionPlatforms) {
+                    if (
+                        character.position.y < plat.maxY && character.position.y + playerHeight > plat.minY &&
+                        character.position.x + playerRadius > plat.minX && character.position.x - playerRadius < plat.maxX
+                    ) {
+                        if (character.position.z + playerRadius > plat.minZ && character.position.z - playerRadius < plat.maxZ) {
+                            if (moveVectorZ > 0) character.position.z = plat.minZ - playerRadius;
+                            if (moveVectorZ < 0) character.position.z = plat.maxZ + playerRadius;
+                        }
+                    }
+                }
+
+                verticalVelocity += gravity;
+                character.position.y += verticalVelocity;
+                let isGrounded = false;
+
+                for (const plat of collisionPlatforms) {
+                    if (
+                        character.position.x + playerRadius > plat.minX && character.position.x - playerRadius < plat.maxX &&
+                        character.position.z + playerRadius > plat.minZ && character.position.z - playerRadius < plat.maxZ
+                    ) {
+                        if (verticalVelocity <= 0 && character.position.y <= plat.maxY + footOffset && character.position.y >= plat.maxY + footOffset - 0.5) {
+                            character.position.y = plat.maxY + footOffset;
+                            verticalVelocity = 0;
+                            isGrounded = true;
+                        } else if (verticalVelocity > 0 && character.position.y + playerHeight >= plat.minY + footOffset && character.position.y < plat.minY + footOffset) {
+                            character.position.y = plat.minY - playerHeight + footOffset;
+                            verticalVelocity = 0;
+                        }
+                    }
+                }
+
+                if (isGrounded && keys.Space) {
+                    verticalVelocity = jumpStrength;
+                    isGrounded = false;
+                    audio.stopWalk();
+                    audio.playJump();
+                }
+
+                if (isMoving) {
+                    walkCycle += 0.15;
+                    character.limbs.leftArmGroup.rotation.x = -Math.sin(walkCycle) * 0.7;
+                    character.limbs.rightArmGroup.rotation.x = Math.sin(walkCycle) * 0.7;
+                    character.limbs.leftLegGroup.rotation.x = Math.sin(walkCycle) * 0.7;
+                    character.limbs.rightLegGroup.rotation.x = -Math.sin(walkCycle) * 0.7;
+
+                    if (isGrounded) audio.startWalk();
+                    else audio.stopWalk();
+                } else {
+                    audio.stopWalk();
+                    character.limbs.leftArmGroup.rotation.x = THREE.MathUtils.lerp(character.limbs.leftArmGroup.rotation.x, 0, 0.2);
+                    character.limbs.rightArmGroup.rotation.x = THREE.MathUtils.lerp(character.limbs.rightArmGroup.rotation.x, 0, 0.2);
+                    character.limbs.leftLegGroup.rotation.x = THREE.MathUtils.lerp(character.limbs.leftLegGroup.rotation.x, 0, 0.2);
+                    character.limbs.rightLegGroup.rotation.x = THREE.MathUtils.lerp(character.limbs.rightLegGroup.rotation.x, 0, 0.2);
+                }
+
+                syncTimer++;
+                if (syncTimer > 3) {
+                    syncTimer = 0;
+                    for (const peerId in activeConnections) {
+                        const conn = activeConnections[peerId];
+                        if (conn && conn.open) {
+                            conn.send({
+                                type: 'position',
+                                x: character.position.x,
+                                y: character.position.y,
+                                z: character.position.z,
+                                ry: character.rotation.y,
+                                lax: character.limbs.leftArmGroup.rotation.x,
+                                rax: character.limbs.rightArmGroup.rotation.x,
+                                llx: character.limbs.leftLegGroup.rotation.x,
+                                rlx: character.limbs.rightLegGroup.rotation.x,
+                                avatar: avatarCustomization
+                            });
+                        }
+                    }
+                }
+            }
+
+            const idealOffset = new THREE.Vector3(
+                Math.sin(cameraAngleX) * Math.cos(cameraAngleY) * cameraDistance,
+                Math.sin(cameraAngleY) * cameraDistance + 2,
+                Math.cos(cameraAngleX) * Math.cos(cameraAngleY) * cameraDistance
+            );
+            camera.position.copy(character.position).add(idealOffset);
+            camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 1.5, 0)));
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            if (isGameRunning && camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+    </script>
+</body>
+</html>
